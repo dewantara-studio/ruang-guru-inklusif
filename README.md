@@ -1,4 +1,4 @@
-# Asisten Guru ABK
+# Ruang Guru Inklusif
 
 Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **soal ujian**, **modul ajar**, dan **LKPD** otomatis sesuai mata pelajaran, kelas, dan ketunaan. Kop surat mengikuti format Provinsi Jawa Timur (saat ini SLB Negeri Tompokersan Lumajang).
 
@@ -92,7 +92,11 @@ Edit objek `SEKOLAH` di `index.html`:
 ```
 
 ## Menayangkan di GitHub Pages
-Unggah `index.html` ke repositori → Settings → Pages → Branch `main` → folder `/ (root)`.
+Buat repositori bernama `ruang-guru-inklusif`, unggah `index.html` → Settings → Pages → Branch `main` → folder `/ (root)`. Alamat webnya: `https://dewantara-studio.github.io/ruang-guru-inklusif/`.
+Setelah itu tambahkan domain `dewantara-studio.github.io` di Firebase (Authentication → Settings → Authorized domains).
+
+## Google Analytics
+Kode pelacakan (ID `G-2RRN3DP0W1`) sudah dipasang di bagian `<head>` pada `index.html`. Data kunjungan muncul di Google Analytics setelah web tayang di GitHub Pages. Untuk melihat pengunjung langsung, buka Analytics → Reports → Realtime. Pelacakan tidak membaca isi soal atau data guru.
 
 ## Catatan
 - Hasil AI wajib diperiksa guru sebelum dipakai.
