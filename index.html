@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asisten Guru ABK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF4F2;--ink:#10231F;--teal:#0B6E6E;--sun:#FFC93C;--plum:#6B2D5C;--card:#fff;--line:3px solid var(--ink);--sh:6px 6px 0 var(--ink)}
+*{box-sizing:border-box}
+html{font-size:19px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',Verdana,sans-serif;line-height:1.6}
+h1,h2,h3,.brand{font-family:'Bricolage Grotesque',Georgia,sans-serif;line-height:1.15;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:4px solid var(--plum);outline-offset:3px}
+.btn{border:var(--line);background:var(--sun);padding:.7rem 1.2rem;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:4px 4px 0 var(--ink);min-height:52px}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.teal{background:var(--teal);color:#fff}.btn.ghost{background:#fff}
+.btn.sm{min-height:44px;padding:.4rem .9rem}
+label{display:block;font-weight:700;margin:1rem 0 .3rem}
+input,select,textarea{width:100%;border:var(--line);border-radius:12px;padding:.7rem .9rem;background:#fff;min-height:52px}
+textarea{min-height:96px}
+.hide{display:none!important}
+/* auth */
+#auth{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.hero{background:var(--teal);color:#fff;padding:3rem;display:flex;flex-direction:column;justify-content:center;gap:1.5rem;border-right:var(--line)}
+.hero h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800}
+.hero p{font-size:1.15rem;max-width:32ch;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:.6rem}
+.chips span{background:var(--sun);color:var(--ink);border:var(--line);border-radius:99px;padding:.3rem .9rem;font-weight:700}
+.panel{display:flex;align-items:center;justify-content:center;padding:2rem}
+.box{background:var(--card);border:var(--line);box-shadow:var(--sh);border-radius:22px;padding:2rem;width:100%;max-width:440px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border:var(--line);border-radius:14px;overflow:hidden;margin-bottom:1rem}
+.tabs button{border:0;background:#fff;padding:.8rem;font-weight:700;cursor:pointer;min-height:52px}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff}
+.note{font-size:.85rem;background:#FFF3CC;border:2px dashed var(--ink);border-radius:10px;padding:.5rem .8rem;margin-top:1rem}
+.err{color:#9B1C1C;font-weight:700;min-height:1.5rem;margin:.6rem 0 0}
+/* app */
+#app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+nav{background:var(--ink);color:#fff;padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;position:sticky;top:0;height:100vh}
+nav .brand{font-size:1.4rem;margin-bottom:.8rem;color:var(--sun)}
+nav button.nv{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:transparent;border:3px solid transparent;color:#fff;padding:.8rem;border-radius:14px;font-weight:700;cursor:pointer;min-height:56px;font-size:1rem}
+nav button.nv[aria-current=true]{background:var(--sun);color:var(--ink);border-color:#fff}
+nav .em{font-size:1.5rem}
+.sp{flex:1}
+.tools{display:flex;gap:.5rem}
+main{padding:1.5rem 2rem 4rem;max-width:1200px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.top h2{font-size:2rem;font-weight:800}
+.grid{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:1.5rem;align-items:start}
+.card{background:var(--card);border:var(--line);box-shadow:var(--sh);border-radius:20px;padding:1.4rem}
+.card h3{font-size:1.25rem;margin-bottom:.3rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.status{margin-top:1rem;font-weight:700}
+.stage{background:#cfdcd8;border:var(--line);border-radius:20px;padding:1rem;overflow:auto;min-height:300px}
+.empty{padding:2rem;text-align:center;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem}
+.paper{background:#fff;color:#000;font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.5;width:100%;max-width:794px;margin:0 auto;padding:40px 48px;box-shadow:0 2px 0 #0003}
+.kop{text-align:center;border-bottom:4px double #000;padding-bottom:8px;margin-bottom:14px;line-height:1.3}
+.kop b{display:block;text-transform:uppercase}
+.kop .s{font-size:15pt}
+.paper h3{font-size:13pt;margin:12px 0 4px;font-family:inherit}
+.paper table{border-collapse:collapse;width:100%;margin:8px 0}
+.paper td,.paper th{border:1px solid #000;padding:4px 8px;vertical-align:top}
+.paper ol,.paper ul{margin:4px 0;padding-left:24px}
+.paper .judul{text-align:center;font-weight:700;text-transform:uppercase;margin:6px 0}
+.gambar{border:2px dashed #888;min-height:90px;text-align:center;padding:8px;color:#555;cursor:pointer;margin:6px 0;font-family:sans-serif;font-size:11pt}.gambar.isi{border:0;padding:0}
+.paper img{max-width:100%;max-height:200px}
+.pb{page-break-before:always;border-top:2px dashed #888;margin-top:20px;padding-top:12px}
+.arsip li{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.7rem 0;border-bottom:2px solid #0002;list-style:none}
+.arsip ul{padding:0;margin:0}
+.load{display:inline-block;width:1.1em;height:1.1em;border:3px solid var(--ink);border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-right:.4rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:860px){
+ #auth{grid-template-columns:1fr}.hero{border-right:0;border-bottom:var(--line);padding:2rem}
+ #app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap}nav .brand{width:100%;margin:0}nav button.nv{width:auto;flex:1 1 40%}.sp{display:none}
+ .grid{grid-template-columns:1fr}main{padding:1rem 1rem 3rem}.paper{padding:20px}
+}
+@media(prefers-reduced-motion:reduce){.load{animation:none}}
+@media print{
+ body{background:#fff}#auth,nav,.top,.card,.actions,.status,.no-print{display:none!important}
+ #app{display:block}main{padding:0;max-width:none}.grid{display:block}.stage{border:0;padding:0;background:#fff;overflow:visible}.paper{box-shadow:none;padding:0;max-width:none}
+ .pb{border:0;margin:0;padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- MASUK / DAFTAR -->
+<section id="auth">
+ <div class="hero">
+  <div class="brand" style="font-size:1.3rem;color:var(--sun)">Asisten Guru ABK</div>
+  <h1>Perangkat ajar untuk setiap anak, siap dalam hitungan menit.</h1>
+  <p>Pilih ketunaan, isi topik, dan soal, modul ajar, atau LKPD langsung tersusun.</p>
+  <div class="chips"><span>Soal ujian</span><span>Modul ajar</span><span>LKPD</span></div>
+ </div>
+ <div class="panel"><div class="box">
+  <div class="tabs" role="tablist">
+   <button role="tab" id="tabMasuk" aria-selected="true">Masuk</button>
+   <button role="tab" id="tabDaftar" aria-selected="false">Daftar</button>
+  </div>
+  <form id="authForm" novalidate>
+   <div id="namaWrap" class="hide"><label for="nama">Nama lengkap</label><input id="nama" autocomplete="name"></div>
+   <label for="uname">Username</label><input id="uname" autocomplete="username" autocapitalize="none" placeholder="contoh: sony18">
+   <p style="font-size:.85rem;margin:.3rem 0 0">Gabungan nama dan angka, tanpa spasi.</p>
+   <label for="pass">Kata sandi (minimal 6 karakter)</label><input id="pass" type="password" autocomplete="current-password">
+   <p class="err" id="authErr" role="alert"></p>
+   <button class="btn teal" id="authBtn" style="width:100%;margin-top:.4rem">Masuk</button>
+   <p class="note">Lupa username atau kata sandi? Hubungi admin sekolah untuk reset akun.</p>
+  </form>
+  <p class="note hide" id="demoNote">Mode percobaan: akun disimpan di peramban ini saja. Isi <b>FIREBASE_CONFIG</b> di kode agar login memakai Firebase.</p>
+ </div></div>
+</section>
+
+<!-- APLIKASI -->
+<div id="app" class="hide">
+ <nav aria-label="Menu utama">
+  <div class="brand">Asisten Guru ABK</div>
+  <button class="nv" data-m="soal"><span class="em">📝</span>Soal Ujian</button>
+  <button class="nv" data-m="modul"><span class="em">📘</span>Modul Ajar</button>
+  <button class="nv" data-m="lkpd"><span class="em">🧩</span>LKPD</button>
+  <button class="nv" data-m="arsip"><span class="em">🗂️</span>Arsip</button>
+  <button class="nv" data-m="set"><span class="em">⚙️</span>Pengaturan</button>
+  <button class="nv hide" id="navAdmin" data-m="admin"><span class="em">🛡️</span>Panel Admin</button>
+  <div class="sp"></div>
+  <div class="tools">
+   <button class="btn sm ghost" id="fMin" aria-label="Perkecil huruf">A−</button>
+   <button class="btn sm ghost" id="fPlus" aria-label="Perbesar huruf">A+</button>
+  </div>
+  <button class="btn sm" id="keluar">Keluar</button>
+ </nav>
+ <main>
+  <div class="top"><h2 id="judul"></h2><span id="salam"></span></div>
+  <div id="view"></div>
+ </main>
+</div>
+
+<script>
+/* ====== PENGATURAN ====== */
+// Tempel konfigurasi Firebase Web App di sini (Firebase Console > Project settings > Your apps).
+const ADMIN_USERS = ['admin']; // hanya untuk mode percobaan. Dengan Firebase, admin ditentukan lewat koleksi 'admins' di Firestore.
+const FIREBASE_CONFIG = null; // contoh: {apiKey:"...",authDomain:"...",projectId:"...",appId:"..."}
+
+const SEKOLAH = {
+ "SLB Negeri Tompokersan Lumajang":"Tompokersan, Kec. Lumajang, Kabupaten Lumajang, Jawa Timur",
+ "Sekolah lain (isi manual)":""
+};
+const KETUNAAN = {
+ "Tunanetra":"huruf besar/jelas, tanpa soal yang bergantung gambar (beri deskripsi verbal), siap dibacakan atau dialihkan ke Braille, benda konkret/taktil",
+ "Tunarungu":"kalimat pendek dan sederhana, banyak isyarat visual dan gambar, hindari idiom, instruksi tertulis jelas",
+ "Tunagrahita":"bahasa sangat sederhana, satu perintah per langkah, benda konkret, pengulangan, soal pendek dan kontekstual",
+ "Tunadaksa":"minim menulis panjang, opsi pilihan/menjodohkan, waktu lebih longgar, siap dijawab lisan",
+ "Autisme":"instruksi terstruktur dan dapat diprediksi, urutan visual, bahasa literal, hindari ambiguitas, minat khusus sebagai konteks",
+ "Slow Learner":"bahasa sederhana, contoh bertahap dari mudah, konteks sehari-hari",
+ "Kesulitan Belajar Spesifik":"huruf jelas, teks pendek, dukungan visual, waktu tambahan",
+ "Tunalaras":"kegiatan singkat berstruktur, penguatan positif, pilihan kegiatan"
+};
+const MODE = {soal:"Soal Ujian",modul:"Modul Ajar",lkpd:"LKPD",arsip:"Arsip",set:"Pengaturan",admin:"Panel Admin"};
+
+/* ====== UTIL ====== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let db=null, user=null, mode='soal', fb=null, isReg=false, lastHTML='', lastMeta=null;
+
+/* ====== AUTH ====== */
+// Username diubah menjadi email internal agar cocok dengan Firebase Auth (guru tidak perlu punya email).
+function loadScript(src){return new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s)})}
+const aEmail=(u,v)=>u+(v>1?'-'+v:'')+'@asistenguru.app', uname=e=>e.split('@')[0].split('-')[0];
+let busy=false;
+async function initAuth(){
+ if(FIREBASE_CONFIG){
+  try{
+   const v='10.12.2',g=`https://www.gstatic.com/firebasejs/${v}/firebase-`;
+   await loadScript(g+'app-compat.js');await loadScript(g+'auth-compat.js');await loadScript(g+'firestore-compat.js');
+   firebase.initializeApp(FIREBASE_CONFIG); fb=firebase.auth(); db=firebase.firestore();
+   fb.onAuthStateChanged(async u=>{if(busy)return;user=null;if(u){const un=uname(u.email);user={nama:u.displayName||un,username:un,admin:false};try{user.admin=(await db.collection('admins').doc(u.uid).get()).exists}catch(e){}}render()});
+   return;
+  }catch(e){$('#authErr').textContent='Firebase gagal dimuat. Periksa koneksi internet.'}
+ }
+ $('#demoNote').classList.remove('hide');
+ user=ls.get('ag_sesi',null); render();
+}
+function setTab(reg){isReg=reg;$('#tabMasuk').setAttribute('aria-selected',!reg);$('#tabDaftar').setAttribute('aria-selected',reg);
+ $('#namaWrap').classList.toggle('hide',!reg);$('#authBtn').textContent=reg?'Buat akun':'Masuk';$('#authErr').textContent=''}
+$('#tabMasuk').onclick=()=>setTab(false);$('#tabDaftar').onclick=()=>setTab(true);
+const pesan=c=>({'auth/email-already-in-use':'Username sudah dipakai. Tambahkan angka lain.','auth/weak-password':'Kata sandi minimal 6 karakter.','auth/invalid-credential':'Username atau kata sandi salah.','auth/user-not-found':'Username belum terdaftar.','auth/wrong-password':'Username atau kata sandi salah.','auth/too-many-requests':'Terlalu banyak percobaan. Tunggu beberapa menit.'}[c]||'Terjadi kendala. Coba lagi.');
+$('#authForm').onsubmit=async e=>{
+ e.preventDefault();const un=$('#uname').value.trim().toLowerCase(),pw=$('#pass').value,nm=$('#nama').value.trim(),er=$('#authErr');er.textContent='';
+ if(!/^[a-z0-9._]{3,20}$/.test(un)){er.textContent='Username 3-20 huruf atau angka, tanpa spasi. Contoh: sony18.';return}
+ if(pw.length<6){er.textContent='Kata sandi minimal 6 karakter.';return}
+ if(isReg&&!nm){er.textContent='Isi nama lengkap.';return}
+ try{
+  if(fb){
+   const ref=db.collection('usernames').doc(un),sn=await ref.get(),d=sn.exists?sn.data():null;
+   if(isReg){
+    if(d&&!d.reset){er.textContent='Username sudah dipakai. Tambahkan angka lain.';return}
+    const ver=d?d.ver+1:1;busy=true;
+    try{
+     const c=await fb.createUserWithEmailAndPassword(aEmail(un,ver),pw);
+     await c.user.updateProfile({displayName:nm});
+     await ref.set({ver,uid:c.user.uid,reset:false});
+     await db.collection('profil').doc(un).set({nama:nm,dibuat:Date.now()},{merge:true});
+     user={nama:nm,username:un,admin:false};
+    }finally{busy=false}
+    render();
+   }else{
+    if(!d){er.textContent='Username belum terdaftar.';return}
+    if(d.reset){setTab(true);er.textContent='Akun ini sudah direset admin. Isi data lalu klik Buat akun dengan username yang sama.';return}
+    await fb.signInWithEmailAndPassword(aEmail(un,d.ver),pw);
+   }
+  }else{
+   const us=ls.get('ag_users',{});
+   if(isReg){if(us[un]){er.textContent='Username sudah dipakai. Tambahkan angka lain.';return}us[un]={nama:nm,pw};ls.set('ag_users',us)}
+   else if(!us[un]||us[un].pw!==pw){er.textContent='Username atau kata sandi salah.';return}
+   user={nama:us[un].nama,username:un,admin:ADMIN_USERS.includes(un)};ls.set('ag_sesi',user);render();
+  }
+ }catch(x){er.textContent=pesan(x.code)}
+};
+$('#keluar').onclick=async()=>{if(fb)await fb.signOut();else{ls.set('ag_sesi',null);user=null;render()}};
+
+/* ====== TAMPILAN ====== */
+function render(){
+ $('#auth').classList.toggle('hide',!!user);$('#app').classList.toggle('hide',!user);
+ if(user){$('#salam').textContent='Halo, '+user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);if(mode==='admin'&&!user.admin)mode='soal';go(mode)}
+}
+$$('nav .nv').forEach(b=>b.onclick=()=>go(b.dataset.m));
+function go(m){
+ mode=m;$('#judul').textContent=MODE[m];
+ $$('nav .nv').forEach(b=>b.setAttribute('aria-current',b.dataset.m===m));
+ const v=$('#view');
+ if(m==='arsip')return arsip(v);
+ if(m==='admin'&&user.admin)return admin(v);
+ if(m==='set')return pengaturan(v);
+ form(v);
+}
+const opt=(o,sel)=>Object.keys(o).map(k=>`<option ${k===sel?'selected':''}>${esc(k)}</option>`).join('');
+function form(v){
+ const p=ls.get('ag_prof',{sekolah:Object.keys(SEKOLAH)[0],alamat:SEKOLAH[Object.keys(SEKOLAH)[0]]});
+ const extra={
+  soal:`<label>Model soal dan jumlahnya (isi 0 bila tidak dipakai)</label><div class="row"><div><label for="jPG">Pilihan ganda</label><input id="jPG" type="number" min="0" max="40" value="10"></div><div><label for="jBS">Benar-Salah</label><input id="jBS" type="number" min="0" max="20" value="0"></div><div><label for="jMj">Menjodohkan</label><input id="jMj" type="number" min="0" max="10" value="0"></div><div><label for="jIs">Isian singkat</label><input id="jIs" type="number" min="0" max="20" value="0"></div><div><label for="jGb">Soal bergambar</label><input id="jGb" type="number" min="0" max="20" value="0"></div><div><label for="jUr">Uraian</label><input id="jUr" type="number" min="0" max="10" value="2"></div></div>
+   <label for="jenis">Jenis penilaian</label><select id="jenis"><option>Ulangan Harian</option><option>Sumatif Tengah Semester</option><option>Sumatif Akhir Semester</option></select>
+   <label for="kesul">Tingkat kesulitan soal</label><select id="kesul"><option>Mudah</option><option selected>Sedang</option><option>Menantang</option></select>
+   <label for="gbr">Gambar untuk dijadikan soal (opsional, maksimal 4)</label><input id="gbr" type="file" accept="image/*" multiple>
+   <p style="font-size:.85rem;margin:.3rem 0 0">AI membuat soal berdasarkan gambar yang diunggah.</p>`,
+  modul:`<label for="dur">Alokasi waktu</label><select id="dur"><option>2 x 35 menit (1 pertemuan)</option><option>2 pertemuan</option><option>3 pertemuan</option></select>`,
+  lkpd:`<label for="jKeg">Jumlah kegiatan</label><select id="jKeg"><option>3</option><option>4</option><option>5</option></select>`
+ }[mode];
+ v.innerHTML=`<div class="grid"><div class="card"><h3>Isi data dulu</h3>
+  <label for="sek">Sekolah</label><select id="sek">${opt(SEKOLAH,p.sekolah)}</select>
+  <label for="alm">Alamat sekolah (untuk kop)</label><input id="alm" value="${esc(p.alamat)}">
+  <label for="logo">Logo sekolah (opsional)</label><input id="logo" type="file" accept="image/*">
+  <div class="row"><div><label for="kepsek">Kepala sekolah</label><input id="kepsek" value="${esc(p.kepsek||'')}"></div><div><label for="guru">Nama guru</label><input id="guru" value="${esc(p.guru||user.nama)}"></div></div>
+  <label for="mapel">Mata pelajaran</label><input id="mapel" placeholder="Contoh: Matematika">
+  <div class="row"><div><label for="kelas">Kelas</label><input id="kelas" placeholder="Contoh: IV"></div>
+  <div><label for="jenjang">Jenjang</label><select id="jenjang"><option>SDLB</option><option>SMPLB</option><option>SMALB</option></select></div></div>
+  <label for="ktn">Ketunaan</label><select id="ktn">${opt(KETUNAAN)}</select>
+  <label for="kemam">Tingkat kemampuan peserta didik</label><select id="kemam"><option>ringan</option><option selected>sedang</option><option>berat (butuh pendampingan penuh)</option></select>
+  <label for="topik">Materi / topik</label><textarea id="topik" placeholder="Contoh: Penjumlahan sampai 20"></textarea>
+  ${extra}
+  <button class="btn teal" id="gen" style="width:100%;margin-top:1.2rem">Buat ${MODE[mode]}</button>
+  <p class="status" id="st" role="status"></p></div>
+  <div class="stage" id="stage"><p class="empty">Hasil akan muncul di sini, lengkap dengan kop surat.</p></div></div>`;
+ $('#sek').onchange=e=>{$('#alm').value=SEKOLAH[e.target.value]||''};
+ $('#gen').onclick=generate;
+}
+function pengaturan(v){
+ v.innerHTML=`<div class="card" style="max-width:560px"><h3>Kunci API Gemini</h3>
+ <p>Dipakai untuk membuat isi perangkat ajar. Dapatkan gratis di Google AI Studio. Kunci hanya tersimpan di peramban ini.</p>
+ <label for="key">Kunci API</label><input id="key" type="password" value="${esc(ls.get('ag_key',''))}" autocomplete="off">
+ <button class="btn teal" id="simpanKey" style="margin-top:1rem">Simpan kunci</button><p class="status" id="st"></p></div>`;
+ $('#simpanKey').onclick=()=>{ls.set('ag_key',$('#key').value.trim());$('#st').textContent='Kunci tersimpan.'};
+}
+
+/* ====== GENERATE ====== */
+function prompt(d){
+ const base=`Kamu guru pendidikan khusus ahli Kurikulum Merdeka di Indonesia. Buat ${MODE[mode]} untuk mata pelajaran ${d.mapel}, kelas ${d.kelas} ${d.jenjang}, peserta didik ${d.ktn} dengan kemampuan ${d.kemam}, materi: ${d.topik}.
+Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhana. `;
+ const fmt=`Keluarkan HANYA fragmen HTML (h3, p, ol, ul, table, strong) tanpa markdown, tanpa kop surat, tanpa tag html/body.`;
+ if(mode==='soal')return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jGb','soal bergambar (pertanyaan atau pilihan jawaban berupa gambar)'],['jUr','uraian']].filter(([k])=>+d[k]>0).map(([k,n])=>d[k]+' soal '+n).join('; ')||'10 soal pilihan ganda'}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Lalu tulis <div class="pb"><h3>Kunci Jawaban dan Pembahasan</h3>...</div> berisi kunci semua bagian, jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru. ${fmt}`;
+ if(mode==='modul')return base+`Alokasi waktu ${d.dur}. Susun modul ajar lengkap: Informasi Umum, Kompetensi Awal, Profil Pelajar Pancasila, Sarana Prasarana, Karakteristik Peserta Didik, Model Pembelajaran, Tujuan Pembelajaran, Pemahaman Bermakna, Pertanyaan Pemantik, Kegiatan Pembelajaran (pendahuluan, inti, penutup dengan waktu), Asesmen (rubrik sederhana), Strategi Diferensiasi dan Akomodasi sesuai ketunaan, Refleksi Guru dan Peserta Didik. ${fmt}`;
+ return base+`Buat LKPD dengan ${d.jKeg} kegiatan bertahap: Identitas (nama, kelas, tanggal), Tujuan, Petunjuk (langkah pendek), Kegiatan 1-${d.jKeg} (tiap kegiatan ada ruang jawab bergaris atau tabel), Refleksi dengan pilihan ekspresi sederhana, dan Kolom Penilaian Guru. ${fmt}`;
+}
+async function generate(){
+ const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
+ const st=$('#st');
+ if(!d.mapel||!d.kelas||!d.topik){st.textContent='Isi mata pelajaran, kelas, dan topik.';return}
+ const key=ls.get('ag_key','');
+ if(!key){st.textContent='Isi kunci API dulu di menu Pengaturan.';return}
+ ls.set('ag_prof',{sekolah:$('#sek').value,alamat:$('#alm').value,kepsek:d.kepsek,guru:d.guru});
+ let logo=ls.get('ag_logo','');const lf=$('#logo').files[0];if(lf){logo=await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(lf)});ls.set('ag_logo',logo)}
+ const b=$('#gen');b.disabled=true;st.innerHTML='<span class="load"></span>Sedang menyusun, mohon tunggu sekitar 30 detik...';
+ try{
+  const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
+  const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}]})});
+  const j=await r.json();
+  if(!r.ok)throw new Error(j.error?.message||'Permintaan gagal');
+  let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
+  if(!t)throw new Error('Hasil kosong, coba lagi.');
+  t=t.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/GAMBAR_(\d)/g,(m,n)=>imgs[n-1]||'');
+  const judul={soal:d.jenis,modul:'Modul Ajar',lkpd:'Lembar Kerja Peserta Didik (LKPD)'}[mode];
+  const kop=`<div class="kop">${logo?`<img src="${logo}" alt="" style="float:left;height:70px">`:''}<b>Pemerintah Provinsi Jawa Timur</b><b>Dinas Pendidikan</b><b class="s">${esc($('#sek').value.replace(' (isi manual)',''))}</b>${esc($('#alm').value)}</div>
+   <div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`;
+  const ttd=mode==='soal'?'':`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
+  lastHTML=kop+t+ttd;lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
+  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button><button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>`;
+  $('#cp').onclick=salin;$('#sv').onclick=simpan;$('#dl').onclick=unduh;
+  $('#sg').onmousedown=e=>e.preventDefault();
+  $('#sg').onclick=()=>{const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null,inP=rg&&$('#paper').contains(rg.commonAncestorContainer);
+   const i=document.createElement('input');i.type='file';i.accept='image/*';
+   i.onchange=async()=>{if(!i.files[0])return;const h='<img src="'+await muat(i.files[0])+'" alt="">';
+    if(inP){sl.removeAllRanges();sl.addRange(rg);document.execCommand('insertHTML',false,h)}else $('#paper').insertAdjacentHTML('beforeend',h)};
+   i.click()};
+  st.textContent='Selesai. Periksa dulu hasilnya sebelum dipakai.';
+ }catch(e){st.textContent='Gagal: '+e.message}
+ b.disabled=false;
+}
+function salin(){
+ const r=document.createRange();r.selectNodeContents($('#paper'));const s=getSelection();s.removeAllRanges();s.addRange(r);
+ try{document.execCommand('copy')}catch(e){}s.removeAllRanges();$('#cp').textContent='Tersalin. Tempel di Word';
+}
+function unduh(){
+ const h='<html><head><meta charset="utf-8"><style>.pb{page-break-before:always}table{border-collapse:collapse}td,th{border:1px solid #000;padding:4px}body{font-family:"Times New Roman";font-size:12pt}</style></head><body>'+$('#paper').innerHTML+'</body></html>';
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+h],{type:'application/msword'}));a.download=(lastMeta.judul||'perangkat-ajar').replace(/[^\w ]+/g,'')+'.doc';a.click();
+}
+async function simpan(){
+ const it={id:Date.now(),...lastMeta,html:$('#paper').innerHTML};
+ const a=ls.get('ag_arsip',[]);a.unshift(it);ls.set('ag_arsip',a.slice(0,30));
+ if(db&&fb.currentUser){try{await db.collection('guru').doc(user.username).collection('arsip').doc(String(it.id)).set(it)}catch(e){$('#sv').textContent='Tersimpan di perangkat';return}}
+ $('#sv').textContent='Tersimpan';
+}
+async function arsip(v){
+ let a=ls.get('ag_arsip',[]);
+ if(db&&fb.currentUser){try{const q=await db.collection('guru').doc(user.username).collection('arsip').orderBy('id','desc').limit(50).get();a=q.docs.map(d=>d.data())}catch(e){}}
+ v.innerHTML=`<div class="card arsip"><h3>Arsip perangkat ajar</h3>${a.length?`<ul>${a.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.tgl)}</span><span><button class="btn sm" data-o="${x.id}">Buka</button> <button class="btn sm ghost" data-d="${x.id}">Hapus</button></span></li>`).join('')}</ul>`:'<p class="empty">Belum ada arsip. Buat perangkat ajar lalu pilih Simpan ke arsip.</p>'}</div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
+ $$('[data-o]').forEach(b=>b.onclick=()=>{const x=a.find(i=>i.id==b.dataset.o);const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button></div><div class="paper">${x.html}</div>`;s.scrollIntoView()});
+ $$('[data-d]').forEach(b=>b.onclick=async()=>{ls.set('ag_arsip',a.filter(i=>i.id!=b.dataset.d));if(db&&fb.currentUser){try{await db.collection('guru').doc(user.username).collection('arsip').doc(String(b.dataset.d)).delete()}catch(e){}}arsip(v)});
+}
+
+/* ====== PANEL ADMIN ====== */
+async function admin(v){
+ v.innerHTML='<div class="card"><p><span class="load"></span>Memuat daftar guru...</p></div>';
+ let L=[];
+ if(db){try{L=(await db.collection('profil').get()).docs.map(d=>({un:d.id,...d.data()}))}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat daftar. Periksa aturan Firestore dan dokumen admin (lihat README).</p></div>';return}}
+ else{const us=ls.get('ag_users',{});L=Object.keys(us).map(k=>({un:k,nama:us[k].nama}))}
+ L.sort((a,b)=>(a.nama||a.un).localeCompare(b.nama||b.un));
+ v.innerHTML=`<div class="card arsip"><h3>Guru terdaftar: ${L.length}</h3><p>Kata sandi tidak bisa dilihat siapa pun. ${db?'Jika guru lupa, klik <b>Reset akun</b>, lalu minta guru mendaftar lagi dengan username yang sama. Arsip tetap aman.':'Klik <b>Sandi baru</b> untuk membuatkan sandi.'}</p>
+ <label for="cari">Cari nama atau username</label><input id="cari"><ul id="dg"></ul><p class="status" id="st" role="status"></p></div>`;
+ const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>((x.nama||'')+' '+x.un).toLowerCase().includes(q));
+  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.nama||'(tanpa nama)')}</b><br>Username: ${esc(x.un)}</span><button class="btn sm" data-u="${esc(x.un)}">${db?'Reset akun':'Sandi baru'}</button></li>`).join(''):'<li>Tidak ada guru yang cocok.</li>'};
+ tampil();$('#cari').oninput=tampil;
+ $('#dg').onclick=async e=>{const b=e.target.closest('[data-u]');if(!b)return;const un=b.dataset.u,st=$('#st');
+  if(db){if(!confirm('Reset akun '+un+'? Guru harus mendaftar lagi dengan username yang sama.'))return;
+   try{await db.collection('usernames').doc(un).update({reset:true});st.textContent='Akun '+un+' direset. Minta guru klik Daftar dengan username yang sama.'}catch(x){st.textContent='Gagal reset. Coba lagi.'}}
+  else{const pw=prompt('Sandi baru untuk '+un+' (minimal 6 karakter):');if(!pw||pw.length<6){st.textContent='Dibatalkan. Sandi minimal 6 karakter.';return}
+   const us=ls.get('ag_users',{});us[un].pw=pw;ls.set('ag_users',us);st.textContent='Sandi baru untuk '+un+' sudah disimpan.'}};
+}
+
+/* ====== GAMBAR PADA SOAL ====== */
+const muat=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>{const m=new Image();m.onload=()=>{const k=Math.min(1,800/Math.max(m.width,m.height)),c=document.createElement('canvas');c.width=m.width*k;c.height=m.height*k;c.getContext('2d').drawImage(m,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.8))};m.src=x.result};x.readAsDataURL(f)});
+document.addEventListener('click',e=>{
+ const g=e.target.closest('.gambar');if(!g||!g.closest('.paper'))return;
+ const i=document.createElement('input');i.type='file';i.accept='image/*';
+ i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const m=new Image();m.onload=()=>{const k=Math.min(1,500/m.width),c=document.createElement('canvas');c.width=m.width*k;c.height=m.height*k;c.getContext('2d').drawImage(m,0,0,c.width,c.height);
+   g.innerHTML='<img src="'+c.toDataURL('image/jpeg',.8)+'" style="max-width:100%;max-height:180px" alt="">';g.classList.add('isi')};m.src=r.result};r.readAsDataURL(f)};
+ i.click();
+});
+
+/* ====== UKURAN HURUF ====== */
+let fs=ls.get('ag_fs',19);const setFs=n=>{fs=Math.min(26,Math.max(16,n));document.documentElement.style.fontSize=fs+'px';ls.set('ag_fs',fs)};
+setFs(fs);$('#fMin').onclick=()=>setFs(fs-2);$('#fPlus').onclick=()=>setFs(fs+2);
+initAuth();
+</script>
+</body>
+</html>
