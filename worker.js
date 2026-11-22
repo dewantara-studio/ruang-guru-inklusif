@@ -17,7 +17,7 @@ export default {
     const body = await req.text();
     if (body.length > 4000000) return new Response('Too large', { status: 413, headers: cors });
     const r = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',
       { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_KEY }, body }
     );
     return new Response(r.body, { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
