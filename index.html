@@ -144,6 +144,8 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
 <script>
 /* ====== PENGATURAN ====== */
 // Tempel konfigurasi Firebase Web App di sini (Firebase Console > Project settings > Your apps).
+// Alamat Cloudflare Worker (perantara AI) agar kunci tidak ada di kode. Contoh: 'https://rgi-ai.namaanda.workers.dev'. Lihat README.
+const AI_PROXY_URL = '';
 const ADMIN_USERS = ['admin']; // hanya untuk mode percobaan. Dengan Firebase, admin ditentukan lewat koleksi 'admins' di Firestore.
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBwGxLl-Zi0GP4HTFKDyeL9QZiMmmu2kJE",
@@ -280,7 +282,7 @@ function form(v){
 }
 function pengaturan(v){
  v.innerHTML=`<div class="card" style="max-width:560px"><h3>Kunci API Gemini</h3>
- <p>Dipakai untuk membuat isi perangkat ajar. Dapatkan gratis di Google AI Studio. Kunci hanya tersimpan di peramban ini.</p>
+ <p>Opsional. Jika dikosongkan, aplikasi memakai layanan AI bawaan sekolah. Kunci pribadi bisa didapat gratis di Google AI Studio dan hanya tersimpan di peramban ini.</p>
  <label for="key">Kunci API</label><input id="key" type="password" value="${esc(ls.get('ag_key',''))}" autocomplete="off">
  <button class="btn teal" id="simpanKey" style="margin-top:1rem">Simpan kunci</button><p class="status" id="st"></p></div>`;
  $('#simpanKey').onclick=()=>{ls.set('ag_key',$('#key').value.trim());$('#st').textContent='Kunci tersimpan.'};
@@ -299,15 +301,15 @@ async function generate(){
  const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
  const st=$('#st');
  if(!d.mapel||!d.kelas||!d.topik){st.textContent='Isi mata pelajaran, kelas, dan topik.';return}
- const key=ls.get('ag_key','');
- if(!key){st.textContent='Isi kunci API dulu di menu Pengaturan.';return}
+ const key=ls.get('ag_key',''),pakaiProxy=!key&&AI_PROXY_URL;
+ if(!key&&!AI_PROXY_URL){st.textContent='Kunci AI belum dipasang. Hubungi admin sekolah.';return}
  ls.set('ag_prof',{sekolah:$('#sek').value,alamat:$('#alm').value,kepsek:d.kepsek,guru:d.guru});
  let logo=ls.get('ag_logo','');const lf=$('#logo').files[0];if(lf){logo=await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(lf)});ls.set('ag_logo',logo)}
  const b=$('#gen');b.disabled=true;st.innerHTML='<span class="load"></span>Sedang menyusun, mohon tunggu sekitar 30 detik...';
  try{
   const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
   const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}]})});
+  const r=await fetch(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}]})});
   const j=await r.json();
   if(!r.ok)throw new Error(j.error?.message||'Permintaan gagal');
   let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();

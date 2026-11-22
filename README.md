@@ -85,6 +85,16 @@ Kata sandi tidak bisa dilihat siapa pun, termasuk admin.
 ## Kunci API Gemini
 Disimpan di peramban masing-masing guru. Batasi kunci hanya untuk domain Anda di Google Cloud Console (HTTP referrers) dan pantau penggunaannya. Untuk skala besar, pindahkan pemanggilan AI ke server (Cloud Functions).
 
+## AI bawaan untuk semua guru (tanpa mengisi kunci)
+Jangan menaruh kunci Gemini di `index.html`: GitHub memblokirnya dan siapa pun bisa melihatnya. Gunakan perantara gratis Cloudflare Workers:
+1. Buat akun di dash.cloudflare.com → **Workers & Pages** → **Create** → **Create Worker** → beri nama (misalnya `rgi-ai`) → **Deploy**.
+2. Klik **Edit code**, hapus isinya, tempel isi file `worker.js`, lalu **Deploy**.
+3. Buka **Settings → Variables and Secrets** → **Add** → tipe **Secret**, nama `GEMINI_KEY`, isi dengan kunci Gemini → **Deploy**.
+4. Salin alamat worker (berakhiran `.workers.dev`) dan tempel ke `AI_PROXY_URL` di bagian atas `<script>` pada `index.html`.
+5. Unggah `index.html` ke GitHub. Guru langsung bisa membuat soal. Kunci pribadi di Pengaturan tetap diutamakan bila diisi.
+
+Worker hanya menerima permintaan dari `dewantara-studio.github.io` (ubah `DIIZINKAN` di `worker.js` bila domain berubah).
+
 ## Menambah sekolah
 Edit objek `SEKOLAH` di `index.html`:
 ```js
