@@ -325,15 +325,46 @@ Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhan
 function mapelVal(){const m=$('#mapel').value;return m.startsWith('Lainnya')?$('#mapelLain').value.trim():m}
 async function kirim(u,o){
  for(let i=0;i<2;i++){
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),120000);
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),150000);
   try{const r=await fetch(u,{...o,signal:c.signal});clearTimeout(t);if((r.status===503||r.status===429)&&i===0){await new Promise(z=>setTimeout(z,2500));continue}return r}
-  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 2 menit). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
+  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 2,5 menit). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
  }
+}
+function rakitKop(d,judul,logo){
+  const kopImg=$('#kopMode').value==='unggah'?logo:($('#kopMode').value==='bawaan'?(KOP[$('#sek').value]||''):'');
+  const nmS=$('#sek').value.startsWith('Sekolah lain')?($('#snm').value.trim()||'NAMA SEKOLAH'):$('#sek').value;
+  const idn=mode==='soal'?`<table class="idn"><tr><td style="width:30%">Nama</td><td style="width:3%">:</td><td style="border-bottom:1px dotted #000">&nbsp;</td></tr><tr><td>Mata Pelajaran</td><td>:</td><td>${esc(d.mapel)}</td></tr><tr><td>Kelas</td><td>:</td><td>${esc(d.kelas)}</td></tr><tr><td>Jenjang</td><td>:</td><td>${esc(d.jenjang)}</td></tr><tr><td>Ketunaan</td><td>:</td><td>${esc(d.ktn)}</td></tr></table>`:'';
+  const kopH=kopImg?`<div class="kop" style="border:0;padding:0"><img src="${kopImg}" alt="Kop sekolah" style="width:100%"></div>`:`<div class="kop"><b>Pemerintah Provinsi Jawa Timur</b><b>Dinas Pendidikan</b><b class="s">${esc(nmS)}</b>${esc($('#alm').value)}</div>`;
+  const kop=kopH+(mode==='soal'?`<div class="judul">${esc(judul)}</div>`:`<div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`)+idn;
+  const kopK=kopH+`<div class="judul">Kunci Jawaban<br>${esc(judul)} - ${esc(d.mapel)} - Kelas ${esc(d.kelas)}</div>`;
+  return {kop,kopK};
+}
+function tampilHasil(){
+  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="cetak('paper')">Cetak Soal</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button>${mode==='soal'&&user.admin?'<button class="btn ghost" id="bk">Bagikan ke Bank Soal</button>':''}<button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>${lastKunci?`<div class="actions no-print" style="margin-top:1.5rem"><b style="align-self:center">Kunci jawaban (terpisah dari soal):</b><button class="btn" data-t="paperKunci" onclick="cetak(this.dataset.t)">Cetak Kunci</button><button class="btn ghost" data-t="paperKunci" onclick="unduh(this.dataset.t)">Unduh Kunci (.doc)</button></div><div class="paper" id="paperKunci" contenteditable="true" spellcheck="false">${lastKunci}</div>`:''}`;
+  $('#cp').onclick=salin;$('#sv').onclick=simpan;$('#dl').onclick=()=>unduh();
+  if($('#bk'))$('#bk').onclick=async()=>{const html=$('#paper').innerHTML;if(html.length>900000){$('#bk').textContent='Terlalu besar, kurangi gambar';return}
+   try{await store.add('bank',{judul:lastMeta.judul,mode,mapel:mapelVal(),kelas:$('#kelas').value.trim(),ketunaan:$('#ktn').value,html,oleh:user.nama,un:user.username});$('#bk').textContent='Sudah dibagikan'}catch(e){$('#bk').textContent='Gagal membagikan'}};
+  $('#sg').onmousedown=e=>e.preventDefault();
+  $('#sg').onclick=()=>{const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null,inP=rg&&$('#paper').contains(rg.commonAncestorContainer);
+   const i=document.createElement('input');i.type='file';i.accept='image/*';
+   i.onchange=async()=>{if(!i.files[0])return;const h='<img src="'+await muat(i.files[0])+'" alt="">';
+    if(inP){sl.removeAllRanges();sl.addRange(rg);document.execCommand('insertHTML',false,h)}else $('#paper').insertAdjacentHTML('beforeend',h)};
+   i.click()};
+  }
+async function cariBank(d,jml){
+ const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd'),mp=d.mapel.toLowerCase(),tp=(d.topik||'').toLowerCase().split(' ')[0];
+ return B.map(b=>{const bm=(b.mapel||'').toLowerCase();let n=0;if(bm&&(bm.includes(mp)||mp.includes(bm)))n+=3;else n-=5;if((b.kelas||'')===d.kelas)n+=2;if(b.ketunaan===d.ktn)n+=2;else if(b.ketunaan==='Semua')n+=1;if(tp&&(b.judul||'').toLowerCase().includes(tp))n+=1;return{b,n}}).filter(x=>x.n>=3).sort((a,c)=>c.n-a.n).slice(0,jml).map(x=>x.b);
+}
+function tampilBank(d,b){
+ const judul=d.jenis||'Ulangan Harian',{kop,kopK}=rakitKop(d,judul,ls.get('ag_logo',''));
+ lastHTML=kop+'<div class="isi">'+b.html+'</div>';lastKunci=b.kunci?kopK+b.kunci:'';
+ lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
+ tampilHasil();
 }
 async function generate(){
  const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
  const st=$('#st');
- d.mapel=mapelVal();d.tebal=!!($('#tebal')&&$('#tebal').checked);
+ d.mapel=mapelVal();d.tebal=!!($('#tebal')&&$('#tebal').checked);d.web=mode==='soal';
  if(!d.mapel||!d.kelas){st.textContent='Pilih mata pelajaran dan kelas.';return}
  const key=ls.get('ag_key',''),pakaiProxy=!key&&AI_PROXY_URL;
  if(!key&&!AI_PROXY_URL){st.textContent='Kunci AI belum dipasang. Hubungi admin sekolah.';return}
@@ -348,10 +379,9 @@ async function generate(){
    const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
    if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+cocok.length+' materi dari gudang, mohon tunggu...'}}catch(e){}
   let bankAcuan='';
-  if(mode==='soal'){try{const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd'),mp=d.mapel.toLowerCase(),tp=(d.topik||'').toLowerCase().split(' ')[0];
-   const sk=B.map(b=>{const bm=(b.mapel||'').toLowerCase();let n=0;if(bm&&(bm.includes(mp)||mp.includes(bm)))n+=3;else n-=5;if((b.kelas||'')===d.kelas)n+=2;if(b.ketunaan===d.ktn)n+=2;else if(b.ketunaan==='Semua')n+=1;if(tp&&(b.judul||'').toLowerCase().includes(tp))n+=1;return{b,n}}).filter(x=>x.n>=3).sort((a,c)=>c.n-a.n).slice(0,3);
-   if(sk.length){bankAcuan=' BANK SOAL sekolah (FOKUS: utamakan mengambil dan menyesuaikan soal dari sumber ini sesuai kelas, ketunaan, dan materi; lengkapi dengan soal baru hanya bila kurang; jangan menyalin soal yang tidak cocok): '+sk.map(x=>'['+x.b.judul+'] '+teks(x.b.html).slice(0,3000)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
-  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan+bankAcuan}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
+  if(mode==='soal'){try{const sk=await cariBank(d,3);
+   if(sk.length){bankAcuan=' BANK SOAL sekolah (FOKUS: utamakan mengambil dan menyesuaikan soal dari sumber ini sesuai kelas, ketunaan, dan materi; lengkapi dengan soal baru hanya bila kurang; jangan menyalin soal yang tidak cocok): '+sk.map(x=>'['+x.judul+'] '+teks(x.html).slice(0,3000)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
+  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan+bankAcuan+(d.web?' Gunakan pencarian internet untuk menemukan referensi soal yang sesuai kurikulum, lalu susun ulang dengan kalimat sendiri (jangan menyalin utuh).':'')}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}},...(d.web?{tools:[{google_search:{}}]}:{})})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
   let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
@@ -359,26 +389,16 @@ async function generate(){
   t=t.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/GAMBAR_(\d)/g,(m,n)=>imgs[n-1]||'');
   let kunciH='';if(mode==='soal'){let m=t.search(/<!--\s*KUNCI\s*-->/i);if(m<0)m=t.search(/<h3[^>]*>\s*Kunci Jawaban/i);if(m>=0){kunciH=t.slice(m).replace(/<!--\s*KUNCI\s*-->/i,'');t=t.slice(0,m)}}
   const judul={soal:d.jenis,modul:'Modul Ajar',lkpd:'Lembar Kerja Peserta Didik (LKPD)'}[mode];
-  const kopImg=$('#kopMode').value==='unggah'?logo:($('#kopMode').value==='bawaan'?(KOP[$('#sek').value]||''):'');
-  const nmS=$('#sek').value.startsWith('Sekolah lain')?($('#snm').value.trim()||'NAMA SEKOLAH'):$('#sek').value;
-  const idn=mode==='soal'?`<table class="idn"><tr><td style="width:30%">Nama</td><td style="width:3%">:</td><td style="border-bottom:1px dotted #000">&nbsp;</td></tr><tr><td>Mata Pelajaran</td><td>:</td><td>${esc(d.mapel)}</td></tr><tr><td>Kelas</td><td>:</td><td>${esc(d.kelas)}</td></tr><tr><td>Jenjang</td><td>:</td><td>${esc(d.jenjang)}</td></tr><tr><td>Ketunaan</td><td>:</td><td>${esc(d.ktn)}</td></tr></table>`:'';
-  const kopH=kopImg?`<div class="kop" style="border:0;padding:0"><img src="${kopImg}" alt="Kop sekolah" style="width:100%"></div>`:`<div class="kop"><b>Pemerintah Provinsi Jawa Timur</b><b>Dinas Pendidikan</b><b class="s">${esc(nmS)}</b>${esc($('#alm').value)}</div>`;
-  const kop=kopH+(mode==='soal'?`<div class="judul">${esc(judul)}</div>`:`<div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`)+idn;
-  const kopK=kopH+`<div class="judul">Kunci Jawaban<br>${esc(judul)} - ${esc(d.mapel)} - Kelas ${esc(d.kelas)}</div>`;
+  const {kop,kopK}=rakitKop(d,judul,logo);
   const ttd=mode==='soal'?'':`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
   lastHTML=kop+'<div class="isi">'+t+'</div>'+ttd;lastKunci=kunciH?kopK+kunciH:'';lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
-  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="cetak('paper')">Cetak Soal</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button>${mode==='soal'&&user.admin?'<button class="btn ghost" id="bk">Bagikan ke Bank Soal</button>':''}<button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>${lastKunci?`<div class="actions no-print" style="margin-top:1.5rem"><b style="align-self:center">Kunci jawaban (terpisah dari soal):</b><button class="btn" data-t="paperKunci" onclick="cetak(this.dataset.t)">Cetak Kunci</button><button class="btn ghost" data-t="paperKunci" onclick="unduh(this.dataset.t)">Unduh Kunci (.doc)</button></div><div class="paper" id="paperKunci" contenteditable="true" spellcheck="false">${lastKunci}</div>`:''}`;
-  $('#cp').onclick=salin;$('#sv').onclick=simpan;$('#dl').onclick=()=>unduh();
-  if($('#bk'))$('#bk').onclick=async()=>{const html=$('#paper').innerHTML;if(html.length>900000){$('#bk').textContent='Terlalu besar, kurangi gambar';return}
-   try{await store.add('bank',{judul:lastMeta.judul,mode,mapel:mapelVal(),kelas:$('#kelas').value.trim(),ketunaan:$('#ktn').value,html,oleh:user.nama,un:user.username});$('#bk').textContent='Sudah dibagikan'}catch(e){$('#bk').textContent='Gagal membagikan'}};
-  $('#sg').onmousedown=e=>e.preventDefault();
-  $('#sg').onclick=()=>{const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null,inP=rg&&$('#paper').contains(rg.commonAncestorContainer);
-   const i=document.createElement('input');i.type='file';i.accept='image/*';
-   i.onchange=async()=>{if(!i.files[0])return;const h='<img src="'+await muat(i.files[0])+'" alt="">';
-    if(inP){sl.removeAllRanges();sl.addRange(rg);document.execCommand('insertHTML',false,h)}else $('#paper').insertAdjacentHTML('beforeend',h)};
-   i.click()};
+  tampilHasil();
   st.textContent='Selesai. Periksa dulu hasilnya sebelum dipakai.';
- }catch(e){st.textContent='Gagal: '+e.message}
+ }catch(e){
+  let ok=false;
+  if(mode==='soal'){try{const sk=await cariBank(d,1);if(sk.length){tampilBank(d,sk[0]);ok=true;st.textContent='AI sedang sibuk, jadi soal diambil langsung dari Bank Soal ("'+sk[0].judul+'"). Periksa dulu sebelum dipakai.'}}catch(x){}}
+  if(!ok)st.textContent='Gagal: '+e.message;
+ }
  b.disabled=false;
 }
 function salin(){
@@ -420,8 +440,9 @@ async function bank(v){
  <label for="bj">Judul soal</label><input id="bj" placeholder="Contoh: Ulangan Matematika Kelas IV Tunagrahita">
  <div class="row"><div><label for="bm">Mata pelajaran</label><input id="bm"></div><div><label for="bl">Kelas</label><input id="bl"></div></div>
  <label for="bkt">Untuk ketunaan</label><select id="bkt"><option>Semua</option>${opt(KETUNAAN)}</select>
- <label>Tempel soal dari Word di kotak ini</label>
+ <label>Tempel soal dari Word di kotak ini (tanpa kop dan tanpa kunci, kop dipasang otomatis)</label>
  <div id="bi" contenteditable="true" style="min-height:140px;border:var(--line);border-radius:12px;padding:.7rem;background:var(--fld);overflow:auto"></div>
+ <label>Kunci jawaban (opsional)</label><div id="bi2" contenteditable="true" style="min-height:90px;border:var(--line);border-radius:12px;padding:.7rem;background:var(--fld);overflow:auto"></div>
  <label for="bf">Atau unggah file teks (.txt)</label><input id="bf" type="file" accept=".txt">
  <button class="btn teal" id="bs" style="margin-top:1rem">Simpan ke Bank Soal</button><p class="status" id="bst" role="status"></p></details>`:''}<label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
  const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>[x.judul,x.mapel,x.kelas,x.ketunaan,x.oleh].join(' ').toLowerCase().includes(q));
@@ -431,9 +452,10 @@ async function bank(v){
   $('#bf').onchange=async()=>{const f=$('#bf').files[0];if(f)$('#bi').innerText=await f.text()};
   $('#bs').onclick=async()=>{const j=$('#bj').value.trim(),st=$('#bst');
    const h=$('#bi').innerHTML.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ class="Mso[^"]*"/gi,'').trim();
+   const hk=$('#bi2').innerText.trim()?$('#bi2').innerHTML.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ class="Mso[^"]*"/gi,'').trim():'';
    if(!j||$('#bi').innerText.trim().length<20){st.textContent='Isi judul dan soalnya.';return}
    if(h.length>900000){st.textContent='Terlalu besar, kurangi gambar.';return}
-   try{await store.add('bank',{judul:j,mode:'soal',mapel:$('#bm').value.trim(),kelas:$('#bl').value.trim(),ketunaan:$('#bkt').value,html:h,oleh:user.nama,un:user.username});bank(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
+   try{await store.add('bank',{judul:j,mode:'soal',mapel:$('#bm').value.trim(),kelas:$('#bl').value.trim(),ketunaan:$('#bkt').value,html:h,kunci:hk,oleh:user.nama,un:user.username});bank(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
  }
  $('#dg').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const x=L.find(i=>i.id===b.dataset.i);if(!x)return;
   if(b.dataset.a==='buka'){lastMeta={judul:x.judul};const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" onclick="unduh()">Unduh .doc</button></div><div class="paper" id="paper">${x.html}</div>`;s.scrollIntoView()}

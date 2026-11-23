@@ -33,6 +33,11 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
 - **Soal dan kunci jawaban dipisah** menjadi dua lembar dengan tombol cetak dan unduh masing-masing.
 - **Mata pelajaran** berupa pilihan (atau ketik sendiri), **Kelas** I sampai XII (jenjang menyesuaikan), dan **Materi** opsional.
 
+## Sumber soal: internet dan Bank Soal
+- Saat membuat soal, AI otomatis memakai pencarian Google untuk referensi, ditambah soal dari Bank Soal sekolah (tanpa pengaturan dari guru).
+- Jika AI sibuk atau gagal, aplikasi otomatis mencoba tanpa pencarian internet dan dengan model lain. Jika masih gagal, soal **diambil langsung dari Bank Soal** yang paling cocok (mata pelajaran, kelas, ketunaan) lengkap dengan kop, identitas siswa, dan kunci (jika admin mengisinya).
+- Di Bank Soal, admin menempel soal **tanpa kop** (kop dipasang otomatis) dan boleh mengisi kunci jawaban terpisah. Tempel ulang `worker.js` di Cloudflare setelah pembaruan ini.
+
 ## Mode percobaan
 1. Buka `index.html` di peramban atau unggah ke GitHub Pages.
 2. Daftar akun (data hanya di peramban itu). Username `admin` otomatis menjadi admin (ubah di `ADMIN_USERS`).
