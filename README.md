@@ -21,9 +21,17 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
 - Untuk peserta didik tunanetra, soal bergambar diganti deskripsi verbal.
 
 ## Gudang Materi dan Bank Soal
-- **Gudang Materi (hanya admin):** admin menempel teks atau mengunggah file `.txt` berisi materi atau strategi untuk ketunaan dan mata pelajaran tertentu. Saat guru membuat soal, AI otomatis memakai sampai 3 materi yang cocok sebagai acuan, sehingga hasilnya lebih sesuai dengan pendekatan sekolah. Materi dari Word atau PDF ditempel sebagai teks.
-- **Bank Soal (semua guru):** setelah soal jadi, klik **Bagikan ke Bank Soal**. Guru lain bisa mencari, membuka, mencetak, mengunduh `.doc`, atau menyimpannya ke arsip tanpa menunggu AI. Penghapusan hanya oleh pemilik atau admin.
+- **Gudang Materi (hanya admin):** admin menempel teks atau mengunggah file `.txt` berisi materi atau strategi untuk ketunaan dan mata pelajaran tertentu. Saat guru membuat soal, AI otomatis memakai sampai 3 materi yang cocok sebagai acuan, sehingga hasilnya lebih sesuai dengan pendekatan sekolah. Materi dari Word atau PDF ditempel sebagai teks. Gudang ini khusus materi acuan; soal jadi disimpan di Bank Soal.
+- **Bank Soal (khusus admin):** kumpulan soal ujian milik sekolah. Admin menambah soal lewat kotak **Tambah soal** (tempel dari Word atau unggah `.txt`) atau membagikan hasil dari menu Soal Ujian. Guru tidak melihat menu ini; guru hanya memakai menu Soal Ujian.
 - Aturan Firestore di atas sudah memuat koleksi `materi` dan `bank`; tempel ulang aturannya.
+
+## Soal menebali, kop sekolah, dan kunci terpisah
+- **Menebali:** centang **Soal menebali** di form. AI membuat soal huruf, angka, atau kata pendek yang dicetak dengan font **Trace** (huruf putus-putus). Unggah file `Trace-lxy0.ttf` ke repositori **di folder yang sama dengan `index.html`**. Cetak lewat **Cetak Soal** lalu simpan sebagai PDF. File Word (.doc) tidak membawa font, jadi untuk soal menebali gunakan cetak/PDF.
+- **Kop surat** punya tiga pilihan di form: **Bawaan sekolah** (SLB Negeri Tompokersan sudah memakai kop resminya), **Unggah kop sendiri** (foto atau screenshot kop, tersimpan di peramban guru), atau **Kop teks otomatis** (nama sekolah dan alamat bisa diketik). Untuk sekolah lain, pilih "Sekolah lain", ketik namanya, lalu unggah kop atau pakai kop teks.
+- **Menambah kop bawaan sekolah lain:** tambahkan baris di objek `KOP` pada `index.html` dengan nama sekolah yang sama seperti di daftar `SEKOLAH` dan isi gambar kop dalam format data URL (base64).
+- **Identitas siswa:** di bawah kop ada Nama (dikosongkan untuk ditulis siswa), Mata Pelajaran, Kelas, Jenjang, dan Ketunaan yang terisi otomatis.
+- **Soal dan kunci jawaban dipisah** menjadi dua lembar dengan tombol cetak dan unduh masing-masing.
+- **Mata pelajaran** berupa pilihan (atau ketik sendiri), **Kelas** I sampai XII (jenjang menyesuaikan), dan **Materi** opsional.
 
 ## Mode percobaan
 1. Buka `index.html` di peramban atau unggah ke GitHub Pages.
@@ -72,8 +80,7 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
          allow write: if isAdmin();
        }
        match /bank/{id} {
-         allow read, create: if request.auth != null;
-         allow delete: if isAdmin() || owns(resource.data.un);
+         allow read, create, delete: if isAdmin();
        }
        match /admins/{uid} {
          allow read: if request.auth != null && request.auth.uid == uid;
