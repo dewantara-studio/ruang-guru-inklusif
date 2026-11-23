@@ -378,14 +378,15 @@ function pecahBank(b){
  kumpul(dok.body);
  const reNo=/^\s*(\d{1,3})\s*[\.\)]\s*/,reOp=/^\s*[a-eA-E]\s*[\.\)]\s/;
  const MP=MAPEL.filter(m=>!m.startsWith('Lainnya')).map(m=>[m,new RegExp('(^|[^a-z])'+m.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)')]).sort((a,c)=>c[0].length-a[0].length);
- const jenisTeks=h=>/pilihan ganda/.test(h)?'PG':/benar\s*(atau|[-\/–])?\s*salah/.test(h)?'BS':/menjodohkan|jodohkan/.test(h)?'MJ':/isian|isilah|lengkapi/.test(h)?'IS':/uraian|esai|essay/.test(h)?'UR':'';
+ const jenisTeks=h=>/pilihan ganda|^pg$/.test(h)?'PG':/benar\s*(atau|[-\/–])?\s*salah/.test(h)?'BS':/menjodohkan|jodohkan/.test(h)?'MJ':/isian|isilah|lengkapi/.test(h)?'IS':/uraian|esai|essay/.test(h)?'UR':'';
  let mKunci=false;const kt={},KLSRE=/kelas\s*[:\-]?\s*(\d{1,2}|[ivx]{1,4})\b(?!\s*[-–]\s*\w)/i;
  const kelasDoc=String(b.kelas||'').split(',').map(rom).filter(Boolean),ctx={kelas:kelasDoc.length===1?kelasDoc[0]:'',mapel:b.mapel||'',tipe:''},out=[];let cur=null;
  blok.forEach(k=>{
   const t=rapi(k.el),tl=t.toLowerCase();
   if(/^[\s=#\-_*~.]{3,}$/.test(t)){cur=null;return}
   if(/kunci\s+jawaban/i.test(t)&&t.length<200&&!reNo.test(t)){mKunci=true;const k0=t.match(KLSRE);if(k0)ctx.kelas=rom(k0[1]);cur=null;return}
-  if(mKunci&&/^(pilihan ganda|benar|isian|esai|uraian|menjodohkan)\b/i.test(t)){(kt[ctx.kelas+'|'+ctx.mapel]=kt[ctx.kelas+'|'+ctx.mapel]||[]).push(t);return}
+  if(mKunci){const lb=t.replace(/^[a-e]\s*[\.\)]\s*/i,'').match(/^(?:kunci\s+)?(pilihan ganda|pg|benar[\s-]*(?:atau\s*)?salah|isian(?: singkat)?|esai(?: singkat)?|uraian|menjodohkan)\b([^:]{0,30}:|)\s*([\s\S]*)$/i);
+   if(lb){const sc=ctx.kelas+'|'+ctx.mapel;(kt[sc]=kt[sc]||[]).push(lb[1]+': '+lb[3]);return}}
   if(k.opsi){if(cur)cur.parts.push(k.el);return}
   const kepala=/^H[1-6]$/.test(k.el.tagName)||(!k.li&&!reNo.test(t)&&t.length<130&&(/^(kelas|mata pelajaran|mapel|bagian|petunjuk|sumatif|penilaian|asesmen|soal|tema|materi)\b/.test(tl)||/^[a-e]\s*[\.\)]\s*(soal\s+)?(pilihan|benar|isian|menjodohkan|uraian|esai|essay|bergambar)/.test(tl)||(!reOp.test(t)&&t.length<60&&MP.some(([m,r])=>r.test(tl)))));
   if(kepala){
@@ -402,11 +403,13 @@ function pecahBank(b){
  });
  const ktm={};
  Object.entries(kt).forEach(([sc,arr])=>{
-  const tx=arr.join(' '),re=/(pilihan ganda|benar[\s-]*(?:atau\s*)?salah|menjodohkan|isian(?: singkat)?|esai(?: singkat)?|uraian)\s*:/gi,pos=[];let m;
+  const tx=arr.join(' '),re=/(pilihan ganda|\bpg\b|benar[\s-]*(?:atau\s*)?salah|menjodohkan|isian(?: singkat)?|esai(?: singkat)?|uraian)(?:[^:|]{0,30}:|\s*(?=\d))/gi,pos=[];let m;
   while((m=re.exec(tx)))pos.push({i:m.index,e:re.lastIndex,j:jenisTeks(m[1].toLowerCase())});
+  const awal=pos.length?tx.slice(0,pos[0].i):tx;
+  if(awal.trim()&&!pos.some(q=>q.j==='PG')){ktm[sc]=ktm[sc]||{};const h0=ktm[sc].PG=ktm[sc].PG||{};awal.replace(/(\d{1,3})[\s\.\):\-=–]*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h0[+a]=c.toUpperCase();return x})}
   pos.forEach((p,n)=>{
    const seg=tx.slice(p.e,n+1<pos.length?pos[n+1].i:undefined).trim();ktm[sc]=ktm[sc]||{};const h=ktm[sc][p.j]=ktm[sc][p.j]||{};
-   if(p.j==='PG'||p.j==='BS')seg.replace(/(\d{1,3})\s*[\.\):\-]?\s*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h[+a]=c.toUpperCase();return x});
+   if(p.j==='PG'||p.j==='BS')seg.replace(/(\d{1,3})[\s\.\):\-=–]*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h[+a]=c.toUpperCase();return x});
    else(seg.includes('|')?seg.split('|'):seg.split(/\s(?=\d{1,3}\s*[\.\)]\s*\S)/)).forEach(q=>{const mm=q.trim().match(/^(\d{1,3})\s*[\.\):\-]?\s*([\s\S]+)$/);if(mm)h[+mm[1]]=mm[2].trim()});
   });
  });
