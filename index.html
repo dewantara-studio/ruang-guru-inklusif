@@ -351,9 +351,105 @@ function tampilHasil(){
     if(inP){sl.removeAllRanges();sl.addRange(rg);document.execCommand('insertHTML',false,h)}else $('#paper').insertAdjacentHTML('beforeend',h)};
    i.click()};
   }
-async function cariBank(d,jml,longgar){
- const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd'),mp=d.mapel.toLowerCase(),tp=(d.topik||'').toLowerCase().split(' ')[0];
- return B.map(b=>{const bm=(b.mapel||'').toLowerCase();let n=0;if(bm&&(bm.includes(mp)||mp.includes(bm)))n+=3;else n-=5;if((b.kelas||'')===d.kelas)n+=2;if(b.ketunaan===d.ktn)n+=2;else if(b.ketunaan==='Semua')n+=1;if(tp&&(b.judul||'').toLowerCase().includes(tp))n+=1;return{b,n}}).filter(x=>longgar||x.n>=3).sort((a,c)=>c.n-a.n).slice(0,jml).map(x=>x.b);
+/* ====== PEMILAH BANK SOAL: pecah per butir, saring sesuai kebutuhan, lalu acak ====== */
+const rom=s=>{s=String(s||'').trim().toUpperCase();return {'1':'I','2':'II','3':'III','4':'IV','5':'V','6':'VI','7':'VII','8':'VIII','9':'IX','10':'X','11':'XI','12':'XII'}[s]||s};
+const acak=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const TIPE=[['jPG','PG','Pilihan Ganda','Berilah tanda silang (X) pada huruf di depan jawaban yang benar!'],['jBS','BS','Benar - Salah','Tulislah B jika pernyataan benar dan S jika pernyataan salah!'],['jMj','MJ','Menjodohkan','Jodohkanlah dengan benar!'],['jIs','IS','Isian Singkat','Isilah titik-titik dengan jawaban yang benar!'],['jGb','GB','Soal Bergambar','Perhatikan gambar, lalu jawablah pertanyaannya!'],['jUr','UR','Uraian','Jawablah pertanyaan berikut dengan benar!']];
+const ringkasKelas=k=>{const l=String(k||'').split(',').map(rom).filter(Boolean),i=l.map(x=>KLS.indexOf(x));if(l.length>=3&&i.every(x=>x>=0)&&i[i.length-1]-i[0]===l.length-1&&i.every((x,n)=>!n||x===i[n-1]+1))return l[0]+'-'+l[l.length-1];return l.join(', ')||'-'};
+function pecahBank(b){
+ const dok=new DOMParser().parseFromString('<body>'+(b.html||'')+'</body>','text/html');
+ const blok=[],BLK=/^(P|DIV|OL|UL|H[1-6]|TABLE|SECTION|BLOCKQUOTE|PRE)$/;
+ const rapi=x=>(x.textContent||'').replace(/\s+/g,' ').trim();
+ const kumpul=el=>{
+  let cur=null;const flush=()=>{if(cur&&(rapi(cur)||cur.querySelector('img')))blok.push({el:cur});cur=null};
+  for(const n of [...el.childNodes]){
+   if(n.nodeType===1&&BLK.test(n.tagName)){
+    flush();
+    if(n.tagName==='OL'||n.tagName==='UL'){
+     const s=parseInt(n.getAttribute('start'))||1,huruf=/^a$/i.test(n.getAttribute('type')||'')||/alpha/i.test(n.getAttribute('style')||'');
+     [...n.children].forEach((li,i)=>{if(li.tagName==='LI')blok.push(huruf||n.tagName==='UL'?{el:li,opsi:true}:{el:li,li:true,no:s+i})});
+    }else if(/^(DIV|SECTION|BLOCKQUOTE)$/.test(n.tagName)&&n.querySelector('p,div,ol,ul,h1,h2,h3,h4,h5,h6,table,br'))kumpul(n);
+    else blok.push({el:n});
+   }else if(n.nodeType===1&&n.tagName==='BR'){flush()}
+   else if(n.nodeType===1||(n.nodeType===3&&(n.textContent.trim()||cur))){if(!cur)cur=dok.createElement('p');cur.appendChild(n.cloneNode(true))}
+  }
+  flush();
+ };
+ kumpul(dok.body);
+ const reNo=/^\s*(\d{1,3})\s*[\.\)]\s*/,reOp=/^\s*[a-eA-E]\s*[\.\)]\s/;
+ const MP=MAPEL.filter(m=>!m.startsWith('Lainnya')).map(m=>[m,new RegExp('(^|[^a-z])'+m.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)')]).sort((a,c)=>c[0].length-a[0].length);
+ const jenisTeks=h=>/pilihan ganda/.test(h)?'PG':/benar\s*(atau|[-\/–])?\s*salah/.test(h)?'BS':/menjodohkan|jodohkan/.test(h)?'MJ':/isian|isilah|lengkapi/.test(h)?'IS':/uraian|esai|essay/.test(h)?'UR':'';
+ const kelasDoc=String(b.kelas||'').split(',').map(rom).filter(Boolean),ctx={kelas:kelasDoc.length===1?kelasDoc[0]:'',mapel:b.mapel||'',tipe:''},out=[];let cur=null;
+ blok.forEach(k=>{
+  const t=rapi(k.el),tl=t.toLowerCase();
+  if(/^[\s=#\-_*~.]{3,}$/.test(t)){cur=null;return}
+  if(k.opsi){if(cur)cur.parts.push(k.el);return}
+  const kepala=/^H[1-6]$/.test(k.el.tagName)||(!k.li&&!reNo.test(t)&&t.length<130&&(/^(kelas|mata pelajaran|mapel|bagian|petunjuk|sumatif|penilaian|asesmen|soal|tema|materi)\b/.test(tl)||/^[a-e]\s*[\.\)]\s*(soal\s+)?(pilihan|benar|isian|menjodohkan|uraian|esai|essay|bergambar)/.test(tl)||(!reOp.test(t)&&t.length<60&&MP.some(([m,r])=>r.test(tl)))));
+  if(kepala){
+   const kk=t.match(/kelas\s*[:\-]?\s*(\d{1,2}|[ivx]{1,4})\b(?!\s*[-–]\s*\w)/i);if(kk){ctx.kelas=rom(kk[1]);ctx.tipe=''}
+   const mm=MP.find(([m,r])=>r.test(tl));if(mm){ctx.mapel=mm[0];ctx.tipe=''}
+   const jt=jenisTeks(tl);if(jt)ctx.tipe=jt;
+   cur=null;return;
+  }
+  if(ctx.tipe==='MJ'){if(!cur){cur={parts:[],no:0,kelas:ctx.kelas,mapel:ctx.mapel,tipe:'MJ'};out.push(cur)}cur.parts.push(k.el);return}
+  if(k.li||reNo.test(t)){cur={parts:[k.el],no:k.li?k.no:+t.match(reNo)[1],li:!!k.li,kelas:ctx.kelas,mapel:ctx.mapel,tipe:ctx.tipe};out.push(cur);return}
+  if(cur)cur.parts.push(k.el);
+ });
+ const km={},dup={},cnt={};
+ if(b.kunci)teks(b.kunci).replace(/(\d{1,3})\s*[\.\):\-–]?\s*([A-Ea-eSs])(?![A-Za-z])/g,(m,n,h)=>{n=+n;if(n in km)dup[n]=1;km[n]=h.toUpperCase();return m});
+ out.forEach(i=>{cnt[i.no]=(cnt[i.no]||0)+1});
+ out.forEach(it=>{
+  const els=it.parts;
+  it.judul=b.judul;it.ktn=b.ketunaan||'';it.kelasDoc=kelasDoc;it.teks=els.map(rapi).join(' ');
+  it.gb=els.some(e=>e.querySelector('img,.gambar'))||/\[gambar/i.test(it.teks);
+  const punyaOpsi=(it.teks.match(/(^|\s)[a-eA-E][\.\)]\s/g)||[]).length>=2||!!els[0].querySelector('ol,ul');
+  if(!it.tipe)it.tipe=punyaOpsi?'PG':/\.{3,}|_{3,}/.test(it.teks)?'IS':'UR';
+  it.raw=els.map(e=>e.outerHTML).join('');
+  const k0=els[0].cloneNode(true);
+  k0.querySelectorAll('ol').forEach(o=>o.setAttribute('type','a'));
+  if(!it.li&&it.tipe!=='MJ'){const w=dok.createTreeWalker(k0,4);let n;while((n=w.nextNode())){if(n.textContent.trim()){n.textContent=n.textContent.replace(reNo,'');break}}}
+  it.isi=k0.innerHTML+els.slice(1).map(e=>'<div>'+e.innerHTML+'</div>').join('');
+  it.kunci=(it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&cnt[it.no]===1?km[it.no]:'';
+ });
+ if(out.length<2)return [{utuh:true,judul:b.judul,ktn:b.ketunaan||'',kelas:'',kelasDoc,mapel:b.mapel||'',tipe:'UT',no:0,teks:teks(b.html||''),raw:b.html||'',kunciUtuh:b.kunci||''}];
+ return out;
+}
+async function poolBank(d){
+ const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd');
+ const mp=d.mapel.toLowerCase(),kl=rom(d.kelas);
+ const semua=B.flatMap(pecahBank);
+ const cocokMp=it=>{const m=(it.mapel||'').toLowerCase();return m&&(m.includes(mp)||mp.includes(m))};
+ const jj=k=>{const i=KLS.indexOf(rom(k));return i<0?-1:i<6?0:i<9?1:2};
+ let pool=semua.filter(it=>cocokMp(it)&&(it.kelas?it.kelas===kl:it.kelasDoc.length===1&&it.kelasDoc[0]===kl)),level='';
+ if(!pool.length){pool=semua.filter(it=>cocokMp(it)&&!it.kelas&&it.kelasDoc.includes(kl));if(pool.length)level='berkas Bank Soal memuat beberapa kelas dan kelas tiap soal tidak terbaca, jadi periksa dulu kesesuaian kelasnya'}
+ if(!pool.length&&jj(kl)>=0){pool=semua.filter(it=>cocokMp(it)&&jj(it.kelas||it.kelasDoc[0])===jj(kl));if(pool.length)level='tidak ada soal kelas '+d.kelas+', jadi dipakai soal kelas lain pada jenjang yang sama'}
+ const pk=pool.filter(it=>!it.ktn||it.ktn==='Semua'||it.ktn===d.ktn);
+ if(pk.length)pool=pk;else if(pool.length)level+=(level?'; ':'')+'ketunaan soal di Bank Soal berbeda dengan pilihan Anda';
+ if(d.topik){const kt=d.topik.toLowerCase().split(/\s+/).filter(w=>w.length>3);const tm=pool.filter(it=>kt.some(w=>it.teks.toLowerCase().includes(w)));if(tm.length>=3)pool=tm}
+ const ada=new Set();pool=pool.filter(it=>{const k=it.teks.slice(0,80).toLowerCase();if(ada.has(k))return false;ada.add(k);return true});
+ if(d.ktn==='Tunanetra')pool=pool.filter(it=>!it.gb);
+ return {pool,level};
+}
+async function rakitDariBank(d){
+ const {pool,level}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
+ if(!butir.length){const u=pool.find(i=>i.utuh);return u?{html:u.raw,kunci:u.kunciUtuh,jumlah:0,utuh:u.judul,level}:{jumlah:0}}
+ const minta={};let ada=false;TIPE.forEach(([k])=>{const n=+d[k]||0;if(n>0){minta[k]=n;ada=true}});if(!ada)minta.jPG=10;
+ const dipakai=new Set(),pilih={},kurang=[];
+ [...TIPE].sort((a,c)=>(c[1]==='GB')-(a[1]==='GB')).forEach(([k,kode,nama])=>{
+  if(!minta[k])return;
+  const a=acak(butir.filter(it=>!dipakai.has(it)&&(kode==='GB'?it.gb:it.tipe===kode))).slice(0,minta[k]);
+  a.forEach(i=>dipakai.add(i));pilih[k]=a;
+  if(a.length<minta[k])kurang.push(nama+' '+a.length+' dari '+minta[k]);
+ });
+ let hs='<h3>Petunjuk</h3><p>Bacalah setiap soal dengan teliti, lalu kerjakan dengan benar!</p>',hk='<h3>Kunci Jawaban</h3>',tot=0,bi=0;
+ const sumber=new Set();
+ TIPE.forEach(([k,kode,nama,ptj])=>{
+  const a=pilih[k];if(!a||!a.length)return;
+  const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>sumber.add(i.judul));
+  hs+=`<h3>${h}</h3><p>${ptj}</p>`+(kode==='MJ'?a.map(i=>i.raw).join(''):'<ol>'+a.map(i=>'<li>'+i.isi+'</li>').join('')+'</ol>');
+  hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?'<b>'+i.kunci+'</b>':'<i>(kunci belum terbaca, lihat berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
+ });
+ return {html:hs,kunci:hk,jumlah:tot,level,kurang,sumber:sumber.size};
 }
 function tampilBank(d,b){
  const judul=d.jenis||'Ulangan Harian',{kop,kopK}=rakitKop(d,judul,ls.get('ag_logo',''));
@@ -379,8 +475,8 @@ async function generate(){
    const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
    if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+cocok.length+' materi dari gudang, mohon tunggu...'}}catch(e){}
   let bankAcuan='';
-  if(mode==='soal'){try{const sk=await cariBank(d,3);
-   if(sk.length){bankAcuan=' BANK SOAL sekolah (FOKUS: utamakan mengambil dan menyesuaikan soal dari sumber ini sesuai kelas, ketunaan, dan materi; lengkapi dengan soal baru hanya bila kurang; jangan menyalin soal yang tidak cocok): '+sk.map(x=>'['+x.judul+'] '+teks(x.html).slice(0,3000)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
+  if(mode==='soal'){try{const pb=await poolBank(d),sk=acak(pb.pool.filter(i=>!i.utuh)).slice(0,25);
+   if(sk.length){bankAcuan=' BANK SOAL sekolah (sudah disaring sesuai mata pelajaran dan kelas; FOKUS: utamakan mengambil dan menyesuaikan butir soal dari sumber ini sesuai ketunaan dan materi; lengkapi dengan soal baru hanya bila kurang): '+sk.map(x=>'['+x.judul+'] '+x.teks.slice(0,600)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' butir soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
   const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan+bankAcuan+(d.web?' Gunakan pencarian internet untuk menemukan referensi soal yang sesuai kurikulum, lalu susun ulang dengan kalimat sendiri (jangan menyalin utuh).':'')}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}},...(d.web?{tools:[{google_search:{}}]}:{})})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
@@ -397,9 +493,10 @@ async function generate(){
  }catch(e){
   let ok=false,info='';
   const psn=/quota|exceeded/i.test(e.message)?'Kuota gratis AI sedang habis (pulih otomatis tiap hari).':e.message;
-  if(mode==='soal'){try{let sk=await cariBank(d,1),mirip=false;if(!sk.length){sk=await cariBank(d,1,true);mirip=sk.length>0}
-   if(sk.length){tampilBank(d,sk[0]);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+') jadi soal diambil dari Bank Soal: "'+sk[0].judul+'"'+(mirip?' (paling mirip, bukan yang persis sama)':'')+'. Periksa dulu sebelum dipakai.'}
-   else info=' Bank Soal masih kosong atau belum ada yang cocok.'}catch(x){info=' Bank Soal tidak bisa dibaca (periksa aturan Firestore).'}}
+  if(mode==='soal'){try{const h=await rakitDariBank(d);
+   if(h.jumlah){tampilBank(d,h);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'), jadi '+h.jumlah+' soal dipilih acak dari Bank Soal yang cocok dengan '+d.mapel+' kelas '+d.kelas+' (sumber: '+h.sumber+' berkas)'+(h.level?'. Catatan: '+h.level:'')+(h.kurang.length?'. Soal kurang dari permintaan: '+h.kurang.join(', ')+' (stok Bank Soal belum cukup)':'')+'. Kunci jawaban otomatis hanya terisi bila bisa dicocokkan, selebihnya periksa berkas asli. Periksa dulu sebelum dipakai.'}
+   else if(h.utuh){tampilBank(d,h);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'). Format berkas Bank Soal "'+h.utuh+'" belum bisa dipecah per nomor, jadi dipakai utuh. Periksa dan hapus bagian yang tidak perlu sebelum dipakai.'}
+   else info=' Tidak ada soal di Bank Soal untuk '+d.mapel+' kelas '+d.kelas+'.'}catch(x){info=' Bank Soal tidak bisa dibaca (periksa aturan Firestore).'}}
   if(!ok)st.textContent='Gagal: '+psn+info;
  }
  b.disabled=false;
@@ -441,7 +538,10 @@ async function bank(v){
  L.sort((a,b)=>(b.dibuat||0)-(a.dibuat||0));
  v.innerHTML=`<div class="card arsip"><h3>Bank Soal bersama (${L.length})</h3><p>Khusus admin: kumpulan soal ujian milik sekolah.</p>${user.admin?`<details style="margin:1rem 0"><summary><b>Tambah soal (admin)</b></summary>
  <label for="bj">Judul soal</label><input id="bj" placeholder="Contoh: Ulangan Matematika Kelas IV Tunagrahita">
- <div class="row"><div><label for="bm">Mata pelajaran</label><select id="bm">${MAPEL.map(m=>`<option>${m}</option>`).join('')}</select></div><div><label for="bl">Kelas</label><select id="bl">${KLS.map(k=>`<option>${k}</option>`).join('')}</select></div></div>
+ <label for="bm">Mata pelajaran</label><select id="bm">${MAPEL.map(m=>`<option>${m}</option>`).join('')}</select>
+ <label>Kelas (boleh pilih lebih dari satu, misalnya satu berkas untuk kelas I sampai XII)</label>
+ <div id="bl" style="display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin:.4rem 0">${KLS.map(k=>`<label class="ck" style="margin:0"><input type="checkbox" class="bk" value="${k}"> ${k}</label>`).join('')}</div>
+ <div id="bp" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem"><button type="button" class="btn sm ghost" data-p="0-5">SDLB (I-VI)</button><button type="button" class="btn sm ghost" data-p="6-8">SMPLB (VII-IX)</button><button type="button" class="btn sm ghost" data-p="9-11">SMALB (X-XII)</button><button type="button" class="btn sm ghost" data-p="0-11">Semua kelas</button><button type="button" class="btn sm ghost" data-p="x">Kosongkan</button></div>
  <label for="bkt">Untuk ketunaan</label><select id="bkt"><option>Semua</option>${opt(KETUNAAN)}</select>
  <label>Tempel soal dari Word di kotak ini (tanpa kop dan tanpa kunci, kop dipasang otomatis)</label>
  <div id="bi" contenteditable="true" style="min-height:140px;border:var(--line);border-radius:12px;padding:.7rem;background:var(--fld);overflow:auto"></div>
@@ -449,16 +549,19 @@ async function bank(v){
  <label for="bf">Atau unggah file teks (.txt)</label><input id="bf" type="file" accept=".txt">
  <button class="btn teal" id="bs" style="margin-top:1rem">Simpan ke Bank Soal</button><p class="status" id="bst" role="status"></p></details>`:''}<label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
  const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>[x.judul,x.mapel,x.kelas,x.ketunaan,x.oleh].join(' ').toLowerCase().includes(q));
-  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · oleh ${esc(x.oleh||'-')}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
+  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · kelas ${esc(ringkasKelas(x.kelas))} · oleh ${esc(x.oleh||'-')}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
  tampil();$('#cari').oninput=tampil;
  if(user.admin){
+  $('#bp').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const p=b.dataset.p,r=p==='x'?null:p.split('-').map(Number);document.querySelectorAll('.bk').forEach((c,i)=>{c.checked=r?(i>=r[0]&&i<=r[1]):false})};
   $('#bf').onchange=async()=>{const f=$('#bf').files[0];if(f)$('#bi').innerText=await f.text()};
   $('#bs').onclick=async()=>{const j=$('#bj').value.trim(),st=$('#bst');
    const h=$('#bi').innerHTML.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ class="Mso[^"]*"/gi,'').trim();
    const hk=$('#bi2').innerText.trim()?$('#bi2').innerHTML.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ class="Mso[^"]*"/gi,'').trim():'';
+   const ks=[...document.querySelectorAll('.bk:checked')].map(x=>x.value);
+   if(!ks.length){st.textContent='Pilih minimal satu kelas.';return}
    if(!j||$('#bi').innerText.trim().length<20){st.textContent='Isi judul dan soalnya.';return}
    if(h.length>900000){st.textContent='Terlalu besar, kurangi gambar.';return}
-   try{await store.add('bank',{judul:j,mode:'soal',mapel:$('#bm').value.trim(),kelas:$('#bl').value.trim(),ketunaan:$('#bkt').value,html:h,kunci:hk,oleh:user.nama,un:user.username});bank(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
+   try{await store.add('bank',{judul:j,mode:'soal',mapel:$('#bm').value.trim(),kelas:ks.join(','),ketunaan:$('#bkt').value,html:h,kunci:hk,oleh:user.nama,un:user.username});bank(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
  }
  $('#dg').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const x=L.find(i=>i.id===b.dataset.i);if(!x)return;
   if(b.dataset.a==='buka'){lastMeta={judul:x.judul};const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" onclick="unduh()">Unduh .doc</button></div><div class="paper" id="paper">${x.html}</div>`;s.scrollIntoView()}
