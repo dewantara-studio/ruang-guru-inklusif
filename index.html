@@ -126,6 +126,8 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
   <button class="nv" data-m="modul"><span class="em">📘</span>Modul Ajar</button>
   <button class="nv" data-m="lkpd"><span class="em">🧩</span>LKPD</button>
   <button class="nv" data-m="arsip"><span class="em">🗂️</span>Arsip</button>
+  <button class="nv" data-m="bank"><span class="em">📚</span>Bank Soal</button>
+  <button class="nv hide" id="navGudang" data-m="gudang"><span class="em">🧰</span>Gudang Materi</button>
   <button class="nv" data-m="set"><span class="em">⚙️</span>Pengaturan</button>
   <button class="nv hide" id="navAdmin" data-m="admin"><span class="em">🛡️</span>Panel Admin</button>
   <div class="sp"></div>
@@ -146,7 +148,9 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
 // Tempel konfigurasi Firebase Web App di sini (Firebase Console > Project settings > Your apps).
 // Alamat Cloudflare Worker (perantara AI) agar kunci tidak ada di kode. Contoh: 'https://rgi-ai.namaanda.workers.dev'. Lihat README.
 const AI_PROXY_URL = 'https://dark-lake-6693.sonyputradewantara.workers.dev/';
-const ADMIN_USERS = ['admin']; // hanya untuk mode percobaan. Dengan Firebase, admin ditentukan lewat koleksi 'admins' di Firestore.
+// Siapa pun yang pertama mendaftar dengan username ini otomatis menjadi admin (kata sandi dipilih sendiri saat daftar, tidak ditulis di kode).
+const ADMIN_USERNAME = 'sony18';
+const ADMIN_USERS = [ADMIN_USERNAME]; // hanya untuk mode percobaan. Dengan Firebase, admin ditentukan lewat koleksi 'admins' di Firestore.
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBwGxLl-Zi0GP4HTFKDyeL9QZiMmmu2kJE",
   authDomain: "ruang-guru-inklusif.firebaseapp.com",
@@ -171,7 +175,7 @@ const KETUNAAN = {
  "Kesulitan Belajar Spesifik":"huruf jelas, teks pendek, dukungan visual, waktu tambahan",
  "Tunalaras":"kegiatan singkat berstruktur, penguatan positif, pilihan kegiatan"
 };
-const MODE = {soal:"Soal Ujian",modul:"Modul Ajar",lkpd:"LKPD",arsip:"Arsip",set:"Pengaturan",admin:"Panel Admin"};
+const MODE = {soal:"Soal Ujian",modul:"Modul Ajar",lkpd:"LKPD",arsip:"Arsip",set:"Pengaturan",admin:"Panel Admin",bank:"Bank Soal",gudang:"Gudang Materi"};
 
 /* ====== UTIL ====== */
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -190,7 +194,7 @@ async function initAuth(){
    const v='10.12.2',g=`https://www.gstatic.com/firebasejs/${v}/firebase-`;
    await loadScript(g+'app-compat.js');await loadScript(g+'auth-compat.js');await loadScript(g+'firestore-compat.js');
    firebase.initializeApp(FIREBASE_CONFIG); fb=firebase.auth(); db=firebase.firestore();
-   fb.onAuthStateChanged(async u=>{if(busy)return;user=null;if(u){const un=uname(u.email);user={nama:u.displayName||un,username:un,admin:false};try{user.admin=(await db.collection('admins').doc(u.uid).get()).exists}catch(e){}}render()});
+   fb.onAuthStateChanged(async u=>{if(busy)return;user=null;if(u){const un=uname(u.email);user={nama:u.displayName||un,username:un,admin:false};try{user.admin=(await db.collection('admins').doc(u.uid).get()).exists;if(!user.admin&&un===ADMIN_USERNAME){await db.collection('admins').doc(u.uid).set({aktif:true});user.admin=true}}catch(e){}}render()});
    return;
   }catch(e){$('#authErr').textContent='Firebase gagal dimuat. Periksa koneksi internet.'}
  }
@@ -218,6 +222,7 @@ $('#authForm').onsubmit=async e=>{
      await ref.set({ver,uid:c.user.uid,reset:false});
      await db.collection('profil').doc(un).set({nama:nm,dibuat:Date.now()},{merge:true});
      user={nama:nm,username:un,admin:false};
+     if(un===ADMIN_USERNAME){try{await db.collection('admins').doc(c.user.uid).set({aktif:true});user.admin=true}catch(x){}}
     }finally{busy=false}
     render();
    }else{
@@ -238,7 +243,7 @@ $('#keluar').onclick=async()=>{if(fb)await fb.signOut();else{ls.set('ag_sesi',nu
 /* ====== TAMPILAN ====== */
 function render(){
  $('#auth').classList.toggle('hide',!!user);$('#app').classList.toggle('hide',!user);
- if(user){$('#salam').textContent='Halo, '+user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);if(mode==='admin'&&!user.admin)mode='soal';go(mode)}
+ if(user){$('#salam').textContent='Halo, '+user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);$('#navGudang').classList.toggle('hide',!user.admin);if((mode==='admin'||mode==='gudang')&&!user.admin)mode='soal';go(mode)}
 }
 $$('nav .nv').forEach(b=>b.onclick=()=>go(b.dataset.m));
 function go(m){
@@ -247,6 +252,8 @@ function go(m){
  const v=$('#view');
  if(m==='arsip')return arsip(v);
  if(m==='admin'&&user.admin)return admin(v);
+ if(m==='bank')return bank(v);
+ if(m==='gudang'&&user.admin)return gudang(v);
  if(m==='set')return pengaturan(v);
  form(v);
 }
@@ -299,9 +306,9 @@ Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhan
 }
 async function kirim(u,o){
  for(let i=0;i<2;i++){
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),60000);
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),100000);
   try{const r=await fetch(u,{...o,signal:c.signal});clearTimeout(t);if((r.status===503||r.status===429)&&i===0){await new Promise(z=>setTimeout(z,2500));continue}return r}
-  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 60 detik). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
+  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 100 detik). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
  }
 }
 async function generate(){
@@ -316,7 +323,11 @@ async function generate(){
  try{
   const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
   const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
-  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
+  let acuan='';
+  try{const M=await store.list('materi'),mp=d.mapel.toLowerCase();
+   const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
+   if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+cocok.length+' materi dari gudang, mohon tunggu...'}}catch(e){}
+  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
   let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
@@ -327,8 +338,10 @@ async function generate(){
    <div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`;
   const ttd=mode==='soal'?'':`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
   lastHTML=kop+t+ttd;lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
-  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button><button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>`;
+  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button><button class="btn ghost" id="bk">Bagikan ke Bank Soal</button><button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>`;
   $('#cp').onclick=salin;$('#sv').onclick=simpan;$('#dl').onclick=unduh;
+  $('#bk').onclick=async()=>{const html=$('#paper').innerHTML;if(html.length>900000){$('#bk').textContent='Terlalu besar, kurangi gambar';return}
+   try{await store.add('bank',{judul:lastMeta.judul,mode,mapel:$('#mapel').value.trim(),kelas:$('#kelas').value.trim(),ketunaan:$('#ktn').value,html,oleh:user.nama,un:user.username});$('#bk').textContent='Sudah dibagikan'}catch(e){$('#bk').textContent='Gagal membagikan'}};
   $('#sg').onmousedown=e=>e.preventDefault();
   $('#sg').onclick=()=>{const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null,inP=rg&&$('#paper').contains(rg.commonAncestorContainer);
    const i=document.createElement('input');i.type='file';i.accept='image/*';
@@ -359,6 +372,44 @@ async function arsip(v){
  v.innerHTML=`<div class="card arsip"><h3>Arsip perangkat ajar</h3>${a.length?`<ul>${a.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.tgl)}</span><span><button class="btn sm" data-o="${x.id}">Buka</button> <button class="btn sm ghost" data-d="${x.id}">Hapus</button></span></li>`).join('')}</ul>`:'<p class="empty">Belum ada arsip. Buat perangkat ajar lalu pilih Simpan ke arsip.</p>'}</div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
  $$('[data-o]').forEach(b=>b.onclick=()=>{const x=a.find(i=>i.id==b.dataset.o);const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button></div><div class="paper">${x.html}</div>`;s.scrollIntoView()});
  $$('[data-d]').forEach(b=>b.onclick=async()=>{ls.set('ag_arsip',a.filter(i=>i.id!=b.dataset.d));if(db&&fb.currentUser){try{await db.collection('guru').doc(user.username).collection('arsip').doc(String(b.dataset.d)).delete()}catch(e){}}arsip(v)});
+}
+
+/* ====== GUDANG MATERI DAN BANK SOAL ====== */
+const store={
+ async list(k){if(db){return (await db.collection(k).get()).docs.map(d=>({...d.data(),id:d.id}))}return ls.get('ag_'+k,[])},
+ async add(k,o){o.id=String(Date.now());o.dibuat=Date.now();if(db)await db.collection(k).doc(o.id).set(o);else{const a=ls.get('ag_'+k,[]);a.unshift(o);ls.set('ag_'+k,a)}return o},
+ async del(k,id){if(db)await db.collection(k).doc(id).delete();else ls.set('ag_'+k,ls.get('ag_'+k,[]).filter(x=>x.id!==id))}
+};
+async function bank(v){
+ v.innerHTML='<div class="card"><p><span class="load"></span>Memuat bank soal...</p></div>';
+ let L=[];try{L=await store.list('bank')}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat. Periksa aturan Firestore (lihat README).</p></div>';return}
+ L.sort((a,b)=>(b.dibuat||0)-(a.dibuat||0));
+ v.innerHTML=`<div class="card arsip"><h3>Bank Soal bersama (${L.length})</h3><p>Perangkat ajar yang dibagikan guru. Bisa langsung dipakai tanpa menunggu AI.</p><label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
+ const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>[x.judul,x.mapel,x.kelas,x.ketunaan,x.oleh].join(' ').toLowerCase().includes(q));
+  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · oleh ${esc(x.oleh||'-')}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
+ tampil();$('#cari').oninput=tampil;
+ $('#dg').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const x=L.find(i=>i.id===b.dataset.i);if(!x)return;
+  if(b.dataset.a==='buka'){lastMeta={judul:x.judul};const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" onclick="unduh()">Unduh .doc</button></div><div class="paper" id="paper">${x.html}</div>`;s.scrollIntoView()}
+  else if(b.dataset.a==='simpan'){const it={id:Date.now(),judul:x.judul,tgl:new Date().toLocaleDateString('id-ID'),html:x.html};const a=ls.get('ag_arsip',[]);a.unshift(it);ls.set('ag_arsip',a.slice(0,30));
+   if(db){try{await db.collection('guru').doc(user.username).collection('arsip').doc(String(it.id)).set(it)}catch(x2){}}b.textContent='Tersimpan'}
+  else if(confirm('Hapus dari bank soal?')){try{await store.del('bank',x.id)}catch(x2){}bank(v)}};
+}
+async function gudang(v){
+ let L=[];try{L=await store.list('materi')}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat. Periksa aturan Firestore (lihat README).</p></div>';return}
+ L.sort((a,b)=>(b.dibuat||0)-(a.dibuat||0));
+ v.innerHTML=`<div class="grid"><div class="card"><h3>Tambah materi</h3>
+  <label for="mj">Judul materi</label><input id="mj" placeholder="Contoh: Strategi mengajar anak tunarungu">
+  <label for="mk">Untuk ketunaan</label><select id="mk"><option>Semua</option>${opt(KETUNAAN)}</select>
+  <label for="mm">Mata pelajaran (kosongkan bila umum)</label><input id="mm">
+  <label for="mi">Isi materi (tempel teks)</label><textarea id="mi" style="min-height:160px"></textarea>
+  <label for="mf">Atau unggah file teks (.txt)</label><input id="mf" type="file" accept=".txt,.md,.csv">
+  <button class="btn teal" id="ms" style="margin-top:1rem">Simpan ke gudang</button><p class="status" id="st" role="status"></p></div>
+  <div class="card arsip"><h3>Isi gudang (${L.length})</h3><p>AI otomatis memakai materi yang cocok dengan ketunaan dan mata pelajaran saat membuat soal.</p><ul id="dg">${L.length?L.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan)}${x.mapel?' · '+esc(x.mapel):''}</span><button class="btn sm ghost" data-i="${x.id}">Hapus</button></li>`).join(''):'<li>Gudang masih kosong.</li>'}</ul></div></div>`;
+ $('#mf').onchange=async()=>{const f=$('#mf').files[0];if(f)$('#mi').value=await f.text()};
+ $('#ms').onclick=async()=>{const j=$('#mj').value.trim(),i=$('#mi').value.trim(),st=$('#st');
+  if(!j||i.length<30){st.textContent='Isi judul dan materi (minimal beberapa kalimat).';return}
+  try{await store.add('materi',{judul:j,ketunaan:$('#mk').value,mapel:$('#mm').value.trim(),isi:i.slice(0,8000)});gudang(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
+ $('#dg').onclick=async e=>{const b=e.target.closest('[data-i]');if(b&&confirm('Hapus materi ini?')){try{await store.del('materi',b.dataset.i)}catch(x){}gudang(v)}};
 }
 
 /* ====== PANEL ADMIN ====== */

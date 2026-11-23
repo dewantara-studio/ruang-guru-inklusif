@@ -20,6 +20,11 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
 - **Sisipkan gambar sendiri:** setelah hasil muncul, letakkan kursor di kertas lalu klik tombol **Sisipkan gambar**.
 - Untuk peserta didik tunanetra, soal bergambar diganti deskripsi verbal.
 
+## Gudang Materi dan Bank Soal
+- **Gudang Materi (hanya admin):** admin menempel teks atau mengunggah file `.txt` berisi materi atau strategi untuk ketunaan dan mata pelajaran tertentu. Saat guru membuat soal, AI otomatis memakai sampai 3 materi yang cocok sebagai acuan, sehingga hasilnya lebih sesuai dengan pendekatan sekolah. Materi dari Word atau PDF ditempel sebagai teks.
+- **Bank Soal (semua guru):** setelah soal jadi, klik **Bagikan ke Bank Soal**. Guru lain bisa mencari, membuka, mencetak, mengunduh `.doc`, atau menyimpannya ke arsip tanpa menunggu AI. Penghapusan hanya oleh pemilik atau admin.
+- Aturan Firestore di atas sudah memuat koleksi `materi` dan `bank`; tempel ulang aturannya.
+
 ## Mode percobaan
 1. Buka `index.html` di peramban atau unggah ke GitHub Pages.
 2. Daftar akun (data hanya di peramban itu). Username `admin` otomatis menjadi admin (ubah di `ADMIN_USERS`).
@@ -62,18 +67,29 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
        match /guru/{u}/arsip/{doc} {
          allow read, write: if owns(u);
        }
+       match /materi/{id} {
+         allow read: if request.auth != null;
+         allow write: if isAdmin();
+       }
+       match /bank/{id} {
+         allow read, create: if request.auth != null;
+         allow delete: if isAdmin() || owns(resource.data.un);
+       }
        match /admins/{uid} {
          allow read: if request.auth != null && request.auth.uid == uid;
+         allow create: if request.auth != null && request.auth.uid == uid &&
+           get(/databases/$(d)/documents/usernames/sony18).data.uid == request.auth.uid;
        }
      }
    }
    ```
 
 ## Membuat akun admin
-1. Daftar lewat aplikasi, misalnya dengan username `admin`.
-2. Firebase Console → **Authentication** → Users → salin **User UID** akun itu.
-3. **Firestore** → Start collection `admins` → Document ID = UID tadi → tambahkan satu field (misalnya `aktif: true`) → Save.
-4. Keluar lalu masuk lagi. Menu **Panel Admin** akan muncul.
+Admin adalah pemilik username `sony18` (ubah di `ADMIN_USERNAME` pada `index.html` dan di aturan Firestore bagian `usernames/sony18`).
+1. Pastikan aturan Firestore terbaru sudah dipublikasikan.
+2. **Segera** daftar lewat aplikasi dengan username `sony18` dan kata sandi pilihan Anda. Siapa pun yang pertama memakai username itu menjadi admin, jadi lakukan sebelum web dibagikan ke guru lain.
+3. Setelah berhasil, menu **Panel Admin** dan **Gudang Materi** muncul otomatis.
+Kata sandi tidak ditulis di kode. Gunakan kata sandi yang kuat dan jangan dibagikan.
 
 ## Jika guru lupa username atau kata sandi
 Kata sandi tidak bisa dilihat siapa pun, termasuk admin.
