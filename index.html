@@ -325,9 +325,9 @@ Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhan
 function mapelVal(){const m=$('#mapel').value;return m.startsWith('Lainnya')?$('#mapelLain').value.trim():m}
 async function kirim(u,o){
  for(let i=0;i<2;i++){
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),100000);
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),120000);
   try{const r=await fetch(u,{...o,signal:c.signal});clearTimeout(t);if((r.status===503||r.status===429)&&i===0){await new Promise(z=>setTimeout(z,2500));continue}return r}
-  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 100 detik). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
+  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 2 menit). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
  }
 }
 async function generate(){
@@ -347,7 +347,11 @@ async function generate(){
   try{const M=await store.list('materi'),mp=d.mapel.toLowerCase();
    const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
    if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+cocok.length+' materi dari gudang, mohon tunggu...'}}catch(e){}
-  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
+  let bankAcuan='';
+  if(mode==='soal'){try{const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd'),mp=d.mapel.toLowerCase(),tp=(d.topik||'').toLowerCase().split(' ')[0];
+   const sk=B.map(b=>{const bm=(b.mapel||'').toLowerCase();let n=0;if(bm&&(bm.includes(mp)||mp.includes(bm)))n+=3;else n-=5;if((b.kelas||'')===d.kelas)n+=2;if(b.ketunaan===d.ktn)n+=2;else if(b.ketunaan==='Semua')n+=1;if(tp&&(b.judul||'').toLowerCase().includes(tp))n+=1;return{b,n}}).filter(x=>x.n>=3).sort((a,c)=>c.n-a.n).slice(0,3);
+   if(sk.length){bankAcuan=' BANK SOAL sekolah (FOKUS: utamakan mengambil dan menyesuaikan soal dari sumber ini sesuai kelas, ketunaan, dan materi; lengkapi dengan soal baru hanya bila kurang; jangan menyalin soal yang tidak cocok): '+sk.map(x=>'['+x.b.judul+'] '+teks(x.b.html).slice(0,3000)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
+  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan+bankAcuan}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
   let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
@@ -402,6 +406,7 @@ async function arsip(v){
 }
 
 /* ====== GUDANG MATERI DAN BANK SOAL ====== */
+const teks=h=>{const e=document.createElement('div');e.innerHTML=h;return (e.textContent||'').replace(/\s+/g,' ').trim()};
 const store={
  async list(k){if(db){return (await db.collection(k).get()).docs.map(d=>({...d.data(),id:d.id}))}return ls.get('ag_'+k,[])},
  async add(k,o){o.id=String(Date.now());o.dibuat=Date.now();if(db)await db.collection(k).doc(o.id).set(o);else{const a=ls.get('ag_'+k,[]);a.unshift(o);ls.set('ag_'+k,a)}return o},

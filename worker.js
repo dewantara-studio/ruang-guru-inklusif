@@ -2,7 +2,7 @@
 // Secret yang harus dibuat di Cloudflare: GEMINI_KEY
 const DIIZINKAN = ['https://dewantara-studio.github.io'];
 // Dicoba berurutan; jika satu model sibuk/lambat, otomatis pindah ke berikutnya.
-const PERCOBAAN = [['gemini-3.6-flash', 'low'], ['gemini-3.8-flash', 'low'], ['gemini-3.6-flash', null]];
+const PERCOBAAN = [['gemini-3.8-flash', 'low'], ['gemini-3.7-flash', 'low'], ['gemini-3.6-flash', 'low'], ['gemini-3.5-flash-lite', null], ['gemini-3.1-flash-lite', null]];
 
 export default {
   async fetch(req, env) {
@@ -34,7 +34,7 @@ export default {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_KEY },
             body: JSON.stringify(b),
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(20000)
           }
         );
         if (r.ok) return new Response(r.body, { status: 200, headers: json });

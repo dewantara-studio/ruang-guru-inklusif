@@ -22,7 +22,7 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
 
 ## Gudang Materi dan Bank Soal
 - **Gudang Materi (hanya admin):** admin menempel teks atau mengunggah file `.txt` berisi materi atau strategi untuk ketunaan dan mata pelajaran tertentu. Saat guru membuat soal, AI otomatis memakai sampai 3 materi yang cocok sebagai acuan, sehingga hasilnya lebih sesuai dengan pendekatan sekolah. Materi dari Word atau PDF ditempel sebagai teks. Gudang ini khusus materi acuan; soal jadi disimpan di Bank Soal.
-- **Bank Soal (khusus admin):** kumpulan soal ujian milik sekolah. Admin menambah soal lewat kotak **Tambah soal** (tempel dari Word atau unggah `.txt`) atau membagikan hasil dari menu Soal Ujian. Guru tidak melihat menu ini; guru hanya memakai menu Soal Ujian.
+- **Bank Soal (khusus admin):** kumpulan soal ujian milik sekolah. Admin menambah soal lewat kotak **Tambah soal** (tempel dari Word atau unggah `.txt`) atau membagikan hasil dari menu Soal Ujian. Guru tidak melihat menu ini; guru hanya memakai menu Soal Ujian. Saat guru membuat soal, AI otomatis mencari soal di Bank Soal yang cocok (mata pelajaran, kelas, ketunaan) dan memakainya sebagai sumber utama.
 - Aturan Firestore di atas sudah memuat koleksi `materi` dan `bank`; tempel ulang aturannya.
 
 ## Soal menebali, kop sekolah, dan kunci terpisah
@@ -80,7 +80,8 @@ Aplikasi web satu file (`index.html`) untuk guru pendidikan khusus: membuat **so
          allow write: if isAdmin();
        }
        match /bank/{id} {
-         allow read, create, delete: if isAdmin();
+         allow read: if request.auth != null;
+         allow create, delete: if isAdmin();
        }
        match /admins/{uid} {
          allow read: if request.auth != null && request.auth.uid == uid;
