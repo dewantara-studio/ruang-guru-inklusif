@@ -379,21 +379,36 @@ function pecahBank(b){
  const reNo=/^\s*(\d{1,3})\s*[\.\)]\s*/,reOp=/^\s*[a-eA-E]\s*[\.\)]\s/;
  const MP=MAPEL.filter(m=>!m.startsWith('Lainnya')).map(m=>[m,new RegExp('(^|[^a-z])'+m.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)')]).sort((a,c)=>c[0].length-a[0].length);
  const jenisTeks=h=>/pilihan ganda/.test(h)?'PG':/benar\s*(atau|[-\/–])?\s*salah/.test(h)?'BS':/menjodohkan|jodohkan/.test(h)?'MJ':/isian|isilah|lengkapi/.test(h)?'IS':/uraian|esai|essay/.test(h)?'UR':'';
+ let mKunci=false;const kt={},KLSRE=/kelas\s*[:\-]?\s*(\d{1,2}|[ivx]{1,4})\b(?!\s*[-–]\s*\w)/i;
  const kelasDoc=String(b.kelas||'').split(',').map(rom).filter(Boolean),ctx={kelas:kelasDoc.length===1?kelasDoc[0]:'',mapel:b.mapel||'',tipe:''},out=[];let cur=null;
  blok.forEach(k=>{
   const t=rapi(k.el),tl=t.toLowerCase();
   if(/^[\s=#\-_*~.]{3,}$/.test(t)){cur=null;return}
+  if(/kunci\s+jawaban/i.test(t)&&t.length<200&&!reNo.test(t)){mKunci=true;const k0=t.match(KLSRE);if(k0)ctx.kelas=rom(k0[1]);cur=null;return}
+  if(mKunci&&/^(pilihan ganda|benar|isian|esai|uraian|menjodohkan)\b/i.test(t)){(kt[ctx.kelas+'|'+ctx.mapel]=kt[ctx.kelas+'|'+ctx.mapel]||[]).push(t);return}
   if(k.opsi){if(cur)cur.parts.push(k.el);return}
   const kepala=/^H[1-6]$/.test(k.el.tagName)||(!k.li&&!reNo.test(t)&&t.length<130&&(/^(kelas|mata pelajaran|mapel|bagian|petunjuk|sumatif|penilaian|asesmen|soal|tema|materi)\b/.test(tl)||/^[a-e]\s*[\.\)]\s*(soal\s+)?(pilihan|benar|isian|menjodohkan|uraian|esai|essay|bergambar)/.test(tl)||(!reOp.test(t)&&t.length<60&&MP.some(([m,r])=>r.test(tl)))));
   if(kepala){
+   mKunci=false;
    const kk=t.match(/kelas\s*[:\-]?\s*(\d{1,2}|[ivx]{1,4})\b(?!\s*[-–]\s*\w)/i);if(kk){ctx.kelas=rom(kk[1]);ctx.tipe=''}
    const mm=MP.find(([m,r])=>r.test(tl));if(mm){ctx.mapel=mm[0];ctx.tipe=''}
    const jt=jenisTeks(tl);if(jt)ctx.tipe=jt;
    cur=null;return;
   }
+  if(mKunci){(kt[ctx.kelas+'|'+ctx.mapel]=kt[ctx.kelas+'|'+ctx.mapel]||[]).push(t);return}
   if(ctx.tipe==='MJ'){if(!cur){cur={parts:[],no:0,kelas:ctx.kelas,mapel:ctx.mapel,tipe:'MJ'};out.push(cur)}cur.parts.push(k.el);return}
   if(k.li||reNo.test(t)){cur={parts:[k.el],no:k.li?k.no:+t.match(reNo)[1],li:!!k.li,kelas:ctx.kelas,mapel:ctx.mapel,tipe:ctx.tipe};out.push(cur);return}
   if(cur)cur.parts.push(k.el);
+ });
+ const ktm={};
+ Object.entries(kt).forEach(([sc,arr])=>{
+  const tx=arr.join(' '),re=/(pilihan ganda|benar[\s-]*(?:atau\s*)?salah|menjodohkan|isian(?: singkat)?|esai(?: singkat)?|uraian)\s*:/gi,pos=[];let m;
+  while((m=re.exec(tx)))pos.push({i:m.index,e:re.lastIndex,j:jenisTeks(m[1].toLowerCase())});
+  pos.forEach((p,n)=>{
+   const seg=tx.slice(p.e,n+1<pos.length?pos[n+1].i:undefined).trim();ktm[sc]=ktm[sc]||{};const h=ktm[sc][p.j]=ktm[sc][p.j]||{};
+   if(p.j==='PG'||p.j==='BS')seg.replace(/(\d{1,3})\s*[\.\):\-]?\s*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h[+a]=c.toUpperCase();return x});
+   else(seg.includes('|')?seg.split('|'):seg.split(/\s(?=\d{1,3}\s*[\.\)]\s*\S)/)).forEach(q=>{const mm=q.trim().match(/^(\d{1,3})\s*[\.\):\-]?\s*([\s\S]+)$/);if(mm)h[+mm[1]]=mm[2].trim()});
+  });
  });
  const km={},dup={},cnt={};
  if(b.kunci)teks(b.kunci).replace(/(\d{1,3})\s*[\.\):\-–]?\s*([A-Ea-eSs])(?![A-Za-z])/g,(m,n,h)=>{n=+n;if(n in km)dup[n]=1;km[n]=h.toUpperCase();return m});
@@ -409,7 +424,8 @@ function pecahBank(b){
   k0.querySelectorAll('ol').forEach(o=>o.setAttribute('type','a'));
   if(!it.li&&it.tipe!=='MJ'){const w=dok.createTreeWalker(k0,4);let n;while((n=w.nextNode())){if(n.textContent.trim()){n.textContent=n.textContent.replace(reNo,'');break}}}
   it.isi=k0.innerHTML+els.slice(1).map(e=>'<div>'+e.innerHTML+'</div>').join('');
-  it.kunci=(it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&cnt[it.no]===1?km[it.no]:'';
+  const kb=((ktm[it.kelas+'|'+it.mapel]||{})[it.tipe]||{})[it.no];
+  it.kunci=kb||((it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&cnt[it.no]===1?km[it.no]:'');
  });
  if(out.length<2)return [{utuh:true,judul:b.judul,ktn:b.ketunaan||'',kelas:'',kelasDoc,mapel:b.mapel||'',tipe:'UT',no:0,teks:teks(b.html||''),raw:b.html||'',kunciUtuh:b.kunci||''}];
  return out;
@@ -447,7 +463,7 @@ async function rakitDariBank(d){
   const a=pilih[k];if(!a||!a.length)return;
   const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>sumber.add(i.judul));
   hs+=`<h3>${h}</h3><p>${ptj}</p>`+(kode==='MJ'?a.map(i=>i.raw).join(''):'<ol>'+a.map(i=>'<li>'+i.isi+'</li>').join('')+'</ol>');
-  hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?'<b>'+i.kunci+'</b>':'<i>(kunci belum terbaca, lihat berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
+  hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?(/^[A-Ea-eSs]$/.test(i.kunci)?'<b>'+i.kunci+'</b>':esc(i.kunci)):'<i>(kunci tidak ditemukan di berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
  });
  return {html:hs,kunci:hk,jumlah:tot,level,kurang,sumber:sumber.size};
 }
@@ -473,10 +489,10 @@ async function generate(){
   let acuan='';
   try{const M=await store.list('materi'),mp=d.mapel.toLowerCase();
    const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
-   if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+cocok.length+' materi dari gudang, mohon tunggu...'}}catch(e){}
+   if(cocok.length){acuan=' ACUAN MATERI dari sekolah (jadikan rujukan utama bila relevan): '+cocok.map(m=>'['+m.judul+'] '+m.isi.slice(0,2500)).join(' ')}}catch(e){}
   let bankAcuan='';
   if(mode==='soal'){try{const pb=await poolBank(d),sk=acak(pb.pool.filter(i=>!i.utuh)).slice(0,25);
-   if(sk.length){bankAcuan=' BANK SOAL sekolah (sudah disaring sesuai mata pelajaran dan kelas; FOKUS: utamakan mengambil dan menyesuaikan butir soal dari sumber ini sesuai ketunaan dan materi; lengkapi dengan soal baru hanya bila kurang): '+sk.map(x=>'['+x.judul+'] '+x.teks.slice(0,600)).join(' ');st.innerHTML='<span class="load"></span>Memakai '+sk.length+' butir soal dari Bank Soal, mohon tunggu...'}}catch(e){}}
+   if(sk.length){bankAcuan=' BANK SOAL sekolah (sudah disaring sesuai mata pelajaran dan kelas; FOKUS: utamakan mengambil dan menyesuaikan butir soal dari sumber ini sesuai ketunaan dan materi; lengkapi dengan soal baru hanya bila kurang): '+sk.map(x=>'['+x.judul+'] '+x.teks.slice(0,600)).join(' ')}}catch(e){}}
   const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket+acuan+bankAcuan+(d.web?' Gunakan pencarian internet untuk menemukan referensi soal yang sesuai kurikulum, lalu susun ulang dengan kalimat sendiri (jangan menyalin utuh).':'')}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}},...(d.web?{tools:[{google_search:{}}]}:{})})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
@@ -489,15 +505,14 @@ async function generate(){
   const ttd=mode==='soal'?'':`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
   lastHTML=kop+'<div class="isi">'+t+'</div>'+ttd;lastKunci=kunciH?kopK+kunciH:'';lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
   tampilHasil();
-  st.textContent='Selesai. Periksa dulu hasilnya sebelum dipakai.';
+  st.textContent='Berhasil.';
  }catch(e){
   let ok=false,info='';
   const psn=/quota|exceeded/i.test(e.message)?'Kuota gratis AI sedang habis (pulih otomatis tiap hari).':e.message;
+  console.error('AI gagal:',e.message);
   if(mode==='soal'){try{const h=await rakitDariBank(d);
-   if(h.jumlah){tampilBank(d,h);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'), jadi '+h.jumlah+' soal dipilih acak dari Bank Soal yang cocok dengan '+d.mapel+' kelas '+d.kelas+' (sumber: '+h.sumber+' berkas)'+(h.level?'. Catatan: '+h.level:'')+(h.kurang.length?'. Soal kurang dari permintaan: '+h.kurang.join(', ')+' (stok Bank Soal belum cukup)':'')+'. Kunci jawaban otomatis hanya terisi bila bisa dicocokkan, selebihnya periksa berkas asli. Periksa dulu sebelum dipakai.'}
-   else if(h.utuh){tampilBank(d,h);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'). Format berkas Bank Soal "'+h.utuh+'" belum bisa dipecah per nomor, jadi dipakai utuh. Periksa dan hapus bagian yang tidak perlu sebelum dipakai.'}
-   else info=' Tidak ada soal di Bank Soal untuk '+d.mapel+' kelas '+d.kelas+'.'}catch(x){info=' Bank Soal tidak bisa dibaca (periksa aturan Firestore).'}}
-  if(!ok)st.textContent='Gagal: '+psn+info;
+   if(h.jumlah||h.utuh){tampilBank(d,h);ok=true;st.textContent='Berhasil.';console.info('Soal dari Bank Soal',h.level||'',h.kurang||'')}}catch(x){console.error(x)}}
+  if(!ok)st.textContent='Gagal.';
  }
  b.disabled=false;
 }
