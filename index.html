@@ -12,19 +12,21 @@ gtag('js',new Date());gtag('config','G-2RRN3DP0W1');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#EEF4F2;--ink:#10231F;--teal:#0B6E6E;--sun:#FFC93C;--plum:#6B2D5C;--card:#fff;--line:3px solid var(--ink);--sh:6px 6px 0 var(--ink)}
+:root{--bg:#EEF4F2;--ink:#10231F;--teal:#0B6E6E;--sun:#FFC93C;--plum:#6B2D5C;--card:#fff;--fld:#fff;--onink:#fff;--nav:#10231F;--stagebg:#cfdcd8;--err:#9B1C1C;--line:3px solid var(--ink);--sh:6px 6px 0 var(--ink)}
+html[data-tema=gelap]{--bg:#0C1614;--ink:#E8F1EE;--card:#15231F;--fld:#1C2E29;--onink:#0C1614;--nav:#050B0A;--stagebg:#22332E;--err:#FF9B9B;--teal:#13827C;color-scheme:dark}
+html[data-tebal="1"] body{font-weight:700;letter-spacing:.01em}
 *{box-sizing:border-box}
 html{font-size:19px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',Verdana,sans-serif;line-height:1.6}
 h1,h2,h3,.brand{font-family:'Bricolage Grotesque',Georgia,sans-serif;line-height:1.15;margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:4px solid var(--plum);outline-offset:3px}
-.btn{border:var(--line);background:var(--sun);padding:.7rem 1.2rem;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:4px 4px 0 var(--ink);min-height:52px}
+.btn{border:var(--line);background:var(--sun);color:#10231F;padding:.7rem 1.2rem;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:4px 4px 0 var(--ink);min-height:52px}
 .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
-.btn.teal{background:var(--teal);color:#fff}.btn.ghost{background:#fff}
+.btn.teal{background:var(--teal);color:#fff}.btn.ghost{background:var(--fld);color:var(--ink)}.btn[aria-pressed=true]{background:var(--teal);color:#fff}
 .btn.sm{min-height:44px;padding:.4rem .9rem}
 label{display:block;font-weight:700;margin:1rem 0 .3rem}
-input,select,textarea{width:100%;border:var(--line);border-radius:12px;padding:.7rem .9rem;background:#fff;min-height:52px}
+input,select,textarea{width:100%;border:var(--line);border-radius:12px;padding:.7rem .9rem;background:var(--fld);min-height:52px}
 textarea{min-height:96px}
 .hide{display:none!important}
 /* auth */
@@ -33,23 +35,23 @@ textarea{min-height:96px}
 .hero h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800}
 .hero p{font-size:1.15rem;max-width:32ch;margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:.6rem}
-.chips span{background:var(--sun);color:var(--ink);border:var(--line);border-radius:99px;padding:.3rem .9rem;font-weight:700}
+.chips span{background:var(--sun);color:#10231F;border:var(--line);border-radius:99px;padding:.3rem .9rem;font-weight:700}
 .panel{display:flex;align-items:center;justify-content:center;padding:2rem}
 .box{background:var(--card);border:var(--line);box-shadow:var(--sh);border-radius:22px;padding:2rem;width:100%;max-width:440px}
 .tabs{display:grid;grid-template-columns:1fr 1fr;border:var(--line);border-radius:14px;overflow:hidden;margin-bottom:1rem}
-.tabs button{border:0;background:#fff;padding:.8rem;font-weight:700;cursor:pointer;min-height:52px}
-.tabs button[aria-selected=true]{background:var(--ink);color:#fff}
-.note{font-size:.85rem;background:#FFF3CC;border:2px dashed var(--ink);border-radius:10px;padding:.5rem .8rem;margin-top:1rem}
-.err{color:#9B1C1C;font-weight:700;min-height:1.5rem;margin:.6rem 0 0}
+.tabs button{border:0;background:var(--fld);padding:.8rem;font-weight:700;cursor:pointer;min-height:52px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--onink)}
+.note{font-size:.85rem;background:#FFF3CC;color:#10231F;border:2px dashed var(--ink);border-radius:10px;padding:.5rem .8rem;margin-top:1rem}
+.err{color:var(--err);font-weight:700;min-height:1.5rem;margin:.6rem 0 0}
 /* app */
 #app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
-nav{background:var(--ink);color:#fff;padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;position:sticky;top:0;height:100vh}
+nav{background:var(--nav);color:#fff;padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;position:sticky;top:0;height:100vh}
 nav .brand{font-size:1.4rem;margin-bottom:.8rem;color:var(--sun)}
 nav button.nv{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:transparent;border:3px solid transparent;color:#fff;padding:.8rem;border-radius:14px;font-weight:700;cursor:pointer;min-height:56px;font-size:1rem}
-nav button.nv[aria-current=true]{background:var(--sun);color:var(--ink);border-color:#fff}
+nav button.nv[aria-current=true]{background:var(--sun);color:#10231F;border-color:#fff}
 nav .em{font-size:1.5rem}
 .sp{flex:1}
-.tools{display:flex;gap:.5rem}
+.tools{display:flex;gap:.5rem}.tools .btn{flex:1}.tampil{display:grid;gap:.4rem;font-size:.85rem}.tampil .tl{font-weight:700;opacity:.85}.tampil .btn{width:100%;font-size:.95rem}
 main{padding:1.5rem 2rem 4rem;max-width:1200px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
 .top h2{font-size:2rem;font-weight:800}
@@ -58,7 +60,7 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
 .card h3{font-size:1.25rem;margin-bottom:.3rem}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 .status{margin-top:1rem;font-weight:700}
-.stage{background:#cfdcd8;border:var(--line);border-radius:20px;padding:1rem;overflow:auto;min-height:300px}
+.stage{background:var(--stagebg);border:var(--line);border-radius:20px;padding:1rem;overflow:auto;min-height:300px}
 .empty{padding:2rem;text-align:center;font-weight:700}
 .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem}
 .paper{background:#fff;color:#000;font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.5;width:100%;max-width:794px;margin:0 auto;padding:40px 48px;box-shadow:0 2px 0 #0003}
@@ -126,15 +128,15 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
   <button class="nv" data-m="modul"><span class="em">📘</span>Modul Ajar</button>
   <button class="nv" data-m="lkpd"><span class="em">🧩</span>LKPD</button>
   <button class="nv" data-m="arsip"><span class="em">🗂️</span>Arsip</button>
-  <button class="nv" data-m="bank"><span class="em">📚</span>Bank Soal</button>
+  <button class="nv hide" id="navBank" data-m="bank"><span class="em">📚</span>Bank Soal</button>
   <button class="nv hide" id="navGudang" data-m="gudang"><span class="em">🧰</span>Gudang Materi</button>
   <button class="nv" data-m="set"><span class="em">⚙️</span>Pengaturan</button>
   <button class="nv hide" id="navAdmin" data-m="admin"><span class="em">🛡️</span>Panel Admin</button>
   <div class="sp"></div>
-  <div class="tools">
-   <button class="btn sm ghost" id="fMin" aria-label="Perkecil huruf">A−</button>
-   <button class="btn sm ghost" id="fPlus" aria-label="Perbesar huruf">A+</button>
-  </div>
+  <div class="tampil"><div class="tl">Tampilan</div>
+   <div class="tools"><button class="btn sm ghost" id="fMin" aria-label="Perkecil ukuran huruf">A− Kecil</button><button class="btn sm ghost" id="fPlus" aria-label="Perbesar ukuran huruf">A+ Besar</button></div>
+   <button class="btn sm ghost" id="tTebal" aria-pressed="false"></button>
+   <button class="btn sm ghost" id="tTema"></button></div>
   <button class="btn sm" id="keluar">Keluar</button>
  </nav>
  <main>
@@ -243,7 +245,7 @@ $('#keluar').onclick=async()=>{if(fb)await fb.signOut();else{ls.set('ag_sesi',nu
 /* ====== TAMPILAN ====== */
 function render(){
  $('#auth').classList.toggle('hide',!!user);$('#app').classList.toggle('hide',!user);
- if(user){$('#salam').textContent='Halo, '+user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);$('#navGudang').classList.toggle('hide',!user.admin);if((mode==='admin'||mode==='gudang')&&!user.admin)mode='soal';go(mode)}
+ if(user){$('#salam').textContent='Halo, '+user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);$('#navGudang').classList.toggle('hide',!user.admin);$('#navBank').classList.toggle('hide',!user.admin);if((mode==='admin'||mode==='gudang'||mode==='bank')&&!user.admin)mode='soal';go(mode)}
 }
 $$('nav .nv').forEach(b=>b.onclick=()=>go(b.dataset.m));
 function go(m){
@@ -252,7 +254,7 @@ function go(m){
  const v=$('#view');
  if(m==='arsip')return arsip(v);
  if(m==='admin'&&user.admin)return admin(v);
- if(m==='bank')return bank(v);
+ if(m==='bank'&&user.admin)return bank(v);
  if(m==='gudang'&&user.admin)return gudang(v);
  if(m==='set')return pengaturan(v);
  form(v);
@@ -338,9 +340,9 @@ async function generate(){
    <div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`;
   const ttd=mode==='soal'?'':`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
   lastHTML=kop+t+ttd;lastMeta={judul:judul+' '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
-  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button><button class="btn ghost" id="bk">Bagikan ke Bank Soal</button><button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>`;
+  $('#stage').innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" id="cp">Salin ke Word</button><button class="btn ghost" id="dl">Unduh .doc</button><button class="btn ghost" id="sg">Sisipkan gambar</button>${mode==='soal'&&user.admin?'<button class="btn ghost" id="bk">Bagikan ke Bank Soal</button>':''}<button class="btn ghost" id="sv">Simpan ke arsip</button></div><p class="no-print"><b>Teks bisa diedit langsung. Klik kotak Gambar untuk memasukkan foto atau gambar.</b></p><div class="paper" id="paper" contenteditable="true" spellcheck="false">${lastHTML}</div>`;
   $('#cp').onclick=salin;$('#sv').onclick=simpan;$('#dl').onclick=unduh;
-  $('#bk').onclick=async()=>{const html=$('#paper').innerHTML;if(html.length>900000){$('#bk').textContent='Terlalu besar, kurangi gambar';return}
+  if($('#bk'))$('#bk').onclick=async()=>{const html=$('#paper').innerHTML;if(html.length>900000){$('#bk').textContent='Terlalu besar, kurangi gambar';return}
    try{await store.add('bank',{judul:lastMeta.judul,mode,mapel:$('#mapel').value.trim(),kelas:$('#kelas').value.trim(),ketunaan:$('#ktn').value,html,oleh:user.nama,un:user.username});$('#bk').textContent='Sudah dibagikan'}catch(e){$('#bk').textContent='Gagal membagikan'}};
   $('#sg').onmousedown=e=>e.preventDefault();
   $('#sg').onclick=()=>{const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null,inP=rg&&$('#paper').contains(rg.commonAncestorContainer);
@@ -382,12 +384,27 @@ const store={
 };
 async function bank(v){
  v.innerHTML='<div class="card"><p><span class="load"></span>Memuat bank soal...</p></div>';
- let L=[];try{L=await store.list('bank')}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat. Periksa aturan Firestore (lihat README).</p></div>';return}
+ let L=[];try{L=(await store.list('bank')).filter(x=>x.mode!=='modul'&&x.mode!=='lkpd')}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat. Periksa aturan Firestore (lihat README).</p></div>';return}
  L.sort((a,b)=>(b.dibuat||0)-(a.dibuat||0));
- v.innerHTML=`<div class="card arsip"><h3>Bank Soal bersama (${L.length})</h3><p>Perangkat ajar yang dibagikan guru. Bisa langsung dipakai tanpa menunggu AI.</p><label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
+ v.innerHTML=`<div class="card arsip"><h3>Bank Soal bersama (${L.length})</h3><p>Khusus admin: kumpulan soal ujian milik sekolah.</p>${user.admin?`<details style="margin:1rem 0"><summary><b>Tambah soal (admin)</b></summary>
+ <label for="bj">Judul soal</label><input id="bj" placeholder="Contoh: Ulangan Matematika Kelas IV Tunagrahita">
+ <div class="row"><div><label for="bm">Mata pelajaran</label><input id="bm"></div><div><label for="bl">Kelas</label><input id="bl"></div></div>
+ <label for="bkt">Untuk ketunaan</label><select id="bkt"><option>Semua</option>${opt(KETUNAAN)}</select>
+ <label>Tempel soal dari Word di kotak ini</label>
+ <div id="bi" contenteditable="true" style="min-height:140px;border:var(--line);border-radius:12px;padding:.7rem;background:var(--fld);overflow:auto"></div>
+ <label for="bf">Atau unggah file teks (.txt)</label><input id="bf" type="file" accept=".txt">
+ <button class="btn teal" id="bs" style="margin-top:1rem">Simpan ke Bank Soal</button><p class="status" id="bst" role="status"></p></details>`:''}<label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
  const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>[x.judul,x.mapel,x.kelas,x.ketunaan,x.oleh].join(' ').toLowerCase().includes(q));
   $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · oleh ${esc(x.oleh||'-')}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
  tampil();$('#cari').oninput=tampil;
+ if(user.admin){
+  $('#bf').onchange=async()=>{const f=$('#bf').files[0];if(f)$('#bi').innerText=await f.text()};
+  $('#bs').onclick=async()=>{const j=$('#bj').value.trim(),st=$('#bst');
+   const h=$('#bi').innerHTML.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ class="Mso[^"]*"/gi,'').trim();
+   if(!j||$('#bi').innerText.trim().length<20){st.textContent='Isi judul dan soalnya.';return}
+   if(h.length>900000){st.textContent='Terlalu besar, kurangi gambar.';return}
+   try{await store.add('bank',{judul:j,mode:'soal',mapel:$('#bm').value.trim(),kelas:$('#bl').value.trim(),ketunaan:$('#bkt').value,html:h,oleh:user.nama,un:user.username});bank(v)}catch(e){st.textContent='Gagal menyimpan. Periksa aturan Firestore.'}};
+ }
  $('#dg').onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const x=L.find(i=>i.id===b.dataset.i);if(!x)return;
   if(b.dataset.a==='buka'){lastMeta={judul:x.judul};const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" onclick="unduh()">Unduh .doc</button></div><div class="paper" id="paper">${x.html}</div>`;s.scrollIntoView()}
   else if(b.dataset.a==='simpan'){const it={id:Date.now(),judul:x.judul,tgl:new Date().toLocaleDateString('id-ID'),html:x.html};const a=ls.get('ag_arsip',[]);a.unshift(it);ls.set('ag_arsip',a.slice(0,30));
@@ -404,7 +421,7 @@ async function gudang(v){
   <label for="mi">Isi materi (tempel teks)</label><textarea id="mi" style="min-height:160px"></textarea>
   <label for="mf">Atau unggah file teks (.txt)</label><input id="mf" type="file" accept=".txt,.md,.csv">
   <button class="btn teal" id="ms" style="margin-top:1rem">Simpan ke gudang</button><p class="status" id="st" role="status"></p></div>
-  <div class="card arsip"><h3>Isi gudang (${L.length})</h3><p>AI otomatis memakai materi yang cocok dengan ketunaan dan mata pelajaran saat membuat soal.</p><ul id="dg">${L.length?L.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan)}${x.mapel?' · '+esc(x.mapel):''}</span><button class="btn sm ghost" data-i="${x.id}">Hapus</button></li>`).join(''):'<li>Gudang masih kosong.</li>'}</ul></div></div>`;
+  <div class="card arsip"><h3>Isi gudang (${L.length})</h3><p>Khusus bahan materi acuan, bukan soal jadi (soal jadi masuk ke Bank Soal). AI otomatis memakai materi yang cocok dengan ketunaan dan mata pelajaran saat membuat soal.</p><ul id="dg">${L.length?L.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan)}${x.mapel?' · '+esc(x.mapel):''}</span><button class="btn sm ghost" data-i="${x.id}">Hapus</button></li>`).join(''):'<li>Gudang masih kosong.</li>'}</ul></div></div>`;
  $('#mf').onchange=async()=>{const f=$('#mf').files[0];if(f)$('#mi').value=await f.text()};
  $('#ms').onclick=async()=>{const j=$('#mj').value.trim(),i=$('#mi').value.trim(),st=$('#st');
   if(!j||i.length<30){st.textContent='Isi judul dan materi (minimal beberapa kalimat).';return}
@@ -445,6 +462,9 @@ document.addEventListener('click',e=>{
 /* ====== UKURAN HURUF ====== */
 let fs=ls.get('ag_fs',19);const setFs=n=>{fs=Math.min(26,Math.max(16,n));document.documentElement.style.fontSize=fs+'px';ls.set('ag_fs',fs)};
 setFs(fs);$('#fMin').onclick=()=>setFs(fs-2);$('#fPlus').onclick=()=>setFs(fs+2);
+let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema','terang');
+const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent=tm==='gelap'?'☀️ Mode Terang':'🌙 Mode Gelap'};
+$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=()=>{tm=tm==='gelap'?'terang':'gelap';ls.set('ag_tema',tm);terap()};terap();
 initAuth();
 </script>
 </body>
