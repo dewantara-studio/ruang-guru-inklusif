@@ -145,7 +145,7 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
 /* ====== PENGATURAN ====== */
 // Tempel konfigurasi Firebase Web App di sini (Firebase Console > Project settings > Your apps).
 // Alamat Cloudflare Worker (perantara AI) agar kunci tidak ada di kode. Contoh: 'https://rgi-ai.namaanda.workers.dev'. Lihat README.
-const AI_PROXY_URL = 'https://dark-lake-6693.sonyputradewantara.workers.dev'; // kosongkan ('') bila ingin hanya mode salin-tempel ke Gemini (tanpa kunci).
+const AI_PROXY_URL = 'https://dark-lake-6693.sonyputradewantara.workers.dev/';
 const ADMIN_USERS = ['admin']; // hanya untuk mode percobaan. Dengan Firebase, admin ditentukan lewat koleksi 'admins' di Firestore.
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBwGxLl-Zi0GP4HTFKDyeL9QZiMmmu2kJE",
@@ -282,7 +282,7 @@ function form(v){
 }
 function pengaturan(v){
  v.innerHTML=`<div class="card" style="max-width:560px"><h3>Kunci API Gemini</h3>
- <p>Opsional. Jika dikosongkan, aplikasi membantu menyusun perintah lalu guru menempelnya langsung di Gemini (gemini.google.com), tanpa kunci. Kunci pribadi bisa didapat gratis di Google AI Studio dan hanya tersimpan di peramban ini.</p>
+ <p>Opsional. Jika dikosongkan, aplikasi memakai layanan AI bawaan sekolah. Kunci pribadi bisa didapat gratis di Google AI Studio dan hanya tersimpan di peramban ini.</p>
  <label for="key">Kunci API</label><input id="key" type="password" value="${esc(ls.get('ag_key',''))}" autocomplete="off">
  <button class="btn teal" id="simpanKey" style="margin-top:1rem">Simpan kunci</button><p class="status" id="st"></p></div>`;
  $('#simpanKey').onclick=()=>{ls.set('ag_key',$('#key').value.trim());$('#st').textContent='Kunci tersimpan.'};
@@ -293,42 +293,33 @@ function prompt(d){
  const base=`Kamu guru pendidikan khusus ahli Kurikulum Merdeka di Indonesia. Buat ${MODE[mode]} untuk mata pelajaran ${d.mapel}, kelas ${d.kelas} ${d.jenjang}, peserta didik ${d.ktn} dengan kemampuan ${d.kemam}, materi: ${d.topik}.
 Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhana. `;
  const fmt=`Keluarkan HANYA fragmen HTML (h3, p, ol, ul, table, strong) tanpa markdown, tanpa kop surat, tanpa tag html/body.`;
- if(mode==='soal')return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jGb','soal bergambar (pertanyaan atau pilihan jawaban berupa gambar)'],['jUr','uraian']].filter(([k])=>+d[k]>0).map(([k,n])=>d[k]+' soal '+n).join('; ')||'10 soal pilihan ganda'}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Lalu tulis <div class="pb"><h3>Kunci Jawaban dan Pembahasan</h3>...</div> berisi kunci semua bagian, jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru. ${fmt}`;
+ if(mode==='soal')return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jGb','soal bergambar (pertanyaan atau pilihan jawaban berupa gambar)'],['jUr','uraian']].filter(([k])=>+d[k]>0).map(([k,n])=>d[k]+' soal '+n).join('; ')||'10 soal pilihan ganda'}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Lalu tulis <div class="pb"><h3>Kunci Jawaban dan Pembahasan</h3>...</div> berisi kunci semua bagian (pembahasan maksimal satu kalimat per soal), jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru. ${fmt}`;
  if(mode==='modul')return base+`Alokasi waktu ${d.dur}. Susun modul ajar lengkap: Informasi Umum, Kompetensi Awal, Profil Pelajar Pancasila, Sarana Prasarana, Karakteristik Peserta Didik, Model Pembelajaran, Tujuan Pembelajaran, Pemahaman Bermakna, Pertanyaan Pemantik, Kegiatan Pembelajaran (pendahuluan, inti, penutup dengan waktu), Asesmen (rubrik sederhana), Strategi Diferensiasi dan Akomodasi sesuai ketunaan, Refleksi Guru dan Peserta Didik. ${fmt}`;
  return base+`Buat LKPD dengan ${d.jKeg} kegiatan bertahap: Identitas (nama, kelas, tanggal), Tujuan, Petunjuk (langkah pendek), Kegiatan 1-${d.jKeg} (tiap kegiatan ada ruang jawab bergaris atau tabel), Refleksi dengan pilihan ekspresi sederhana, dan Kolom Penilaian Guru. ${fmt}`;
 }
-function panelManual(p,n){
- $('#stage').innerHTML=`<div class="card" style="max-width:640px;margin:0 auto"><h3>Susun lewat Gemini</h3>
- <ol style="padding-left:1.3rem"><li>Klik <b>Salin perintah</b>.</li><li>Klik <b>Buka Gemini</b>, tempel perintah di kolom obrolan${n?`, lalu lampirkan ${n} gambar yang sama dengan urutan yang sama seperti di form`:''}, dan kirim.</li><li>Setelah jawaban selesai, klik tombol salin pada kotak kode jawaban, lalu tempel di kolom bawah.</li><li>Klik <b>Tampilkan di kertas</b>.</li></ol>
- <div class="actions"><button class="btn" id="mkSalin" type="button">Salin perintah</button><a class="btn ghost" href="https://gemini.google.com/app" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center">Buka Gemini</a></div>
- <label for="mkHasil">Tempel hasil dari Gemini di sini</label><textarea id="mkHasil" style="min-height:160px"></textarea>
- <button class="btn teal" id="mkTampil" type="button" style="margin-top:1rem">Tampilkan di kertas</button></div>`;
- $('#mkSalin').onclick=async()=>{try{await navigator.clipboard.writeText(p)}catch(e){const t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}$('#mkSalin').textContent='Perintah tersalin'};
- $('#mkTampil').onclick=()=>{const v=$('#mkHasil').value.trim();if(!v){$('#st').textContent='Tempel hasil dari Gemini dulu.';return}generate(v)};
+async function kirim(u,o){
+ for(let i=0;i<2;i++){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),60000);
+  try{const r=await fetch(u,{...o,signal:c.signal});clearTimeout(t);if((r.status===503||r.status===429)&&i===0){await new Promise(z=>setTimeout(z,2500));continue}return r}
+  catch(e){clearTimeout(t);if(e.name==='AbortError')throw new Error('AI terlalu lama menjawab (lebih dari 60 detik). Kurangi jumlah soal lalu coba lagi.');if(i===1)throw new Error('Tidak bisa terhubung ke layanan AI. Periksa alamat worker (AI_PROXY_URL) dan koneksi internet.')}
+ }
 }
-async function generate(teksManual){
- const ov=typeof teksManual==='string'?teksManual:null;
+async function generate(){
  const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
  const st=$('#st');
  if(!d.mapel||!d.kelas||!d.topik){st.textContent='Isi mata pelajaran, kelas, dan topik.';return}
  const key=ls.get('ag_key',''),pakaiProxy=!key&&AI_PROXY_URL;
+ if(!key&&!AI_PROXY_URL){st.textContent='Kunci AI belum dipasang. Hubungi admin sekolah.';return}
  ls.set('ag_prof',{sekolah:$('#sek').value,alamat:$('#alm').value,kepsek:d.kepsek,guru:d.guru});
  let logo=ls.get('ag_logo','');const lf=$('#logo').files[0];if(lf){logo=await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(lf)});ls.set('ag_logo',logo)}
- let jalurManual=null,jmlImg=0;
- const b=$('#gen');b.disabled=true;st.innerHTML='<span class="load"></span>Sedang menyusun, mohon tunggu sekitar 30 detik...';
+ const b=$('#gen');b.disabled=true;st.innerHTML='<span class="load"></span>Sedang menyusun, mohon tunggu sekitar 10-20 detik...';
  try{
   const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
   const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
-  if(ov===null){jalurManual=prompt(d)+ket+' Tuliskan seluruh hasil di dalam satu blok kode HTML supaya mudah disalin.';jmlImg=imgs.length}
-  if(ov===null&&!key&&!AI_PROXY_URL){panelManual(jalurManual,jmlImg);b.disabled=false;st.textContent='Ikuti langkah di kotak sebelah kanan.';return}
-  let t;
-  if(ov!==null){t=ov.replace(/```html|```/g,'').trim();if(!/<[a-z][\s\S]*>/i.test(t))throw new Error('Yang ditempel belum berupa kode HTML. Salin dari kotak kode di Gemini (tombol salin).')}
-  else{
-  const r=await fetch(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
-  const raw=await r.text();let j;try{j=JSON.parse(raw)}catch(_){throw new Error(r.status===524||r.status===504?'Waktu tunggu server habis (kode '+r.status+'). Kurangi jumlah soal lalu coba lagi.':'Respons server tidak valid (kode '+r.status+').')}
-  if(!r.ok)throw new Error(j.error?.message||'Permintaan gagal');
-  t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
-  }
+  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}],generationConfig:{thinkingConfig:{thinkingBudget:0}}})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
+  let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
   if(!t)throw new Error('Hasil kosong, coba lagi.');
   t=t.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/GAMBAR_(\d)/g,(m,n)=>imgs[n-1]||'');
   const judul={soal:d.jenis,modul:'Modul Ajar',lkpd:'Lembar Kerja Peserta Didik (LKPD)'}[mode];
@@ -345,7 +336,7 @@ async function generate(teksManual){
     if(inP){sl.removeAllRanges();sl.addRange(rg);document.execCommand('insertHTML',false,h)}else $('#paper').insertAdjacentHTML('beforeend',h)};
    i.click()};
   st.textContent='Selesai. Periksa dulu hasilnya sebelum dipakai.';
- }catch(e){st.innerHTML='Gagal: '+esc(e.message)+(jalurManual?'<br><button class="btn sm" id="mkJalan" type="button" style="margin-top:.6rem">Susun lewat Gemini (salin-tempel)</button>':'');const mj=$('#mkJalan');if(mj)mj.onclick=()=>panelManual(jalurManual,jmlImg)}
+ }catch(e){st.textContent='Gagal: '+e.message}
  b.disabled=false;
 }
 function salin(){
