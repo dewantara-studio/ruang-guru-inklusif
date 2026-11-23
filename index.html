@@ -316,7 +316,7 @@ async function generate(){
  try{
   const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
   const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
-  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}],generationConfig:{thinkingConfig:{thinkingBudget:0}}})});
+  const r=await kirim(pakaiProxy?AI_PROXY_URL:`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[...imgs.map(u=>({inline_data:{mime_type:'image/jpeg',data:u.split(',')[1]}})),{text:prompt(d)+ket}]}],generationConfig:{thinkingConfig:{thinkingLevel:'low'}}})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error?.message||('Layanan AI menolak permintaan (kode '+r.status+'). Periksa alamat worker dan kunci AI.'));
   let t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```html|```/g,'').trim();
