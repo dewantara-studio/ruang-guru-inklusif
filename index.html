@@ -504,19 +504,20 @@ function buatGambarEmoji(kode,n){
  }
  return out;
 }
-const KATA=['ibu','bapak','adik','kakak','buku','meja','kursi','bola','roti','susu','topi','sapu','mata','kaki','baju'],KAL=['Ini apel.','Aku makan roti.','Adik minum susu.','Kakak baca buku.','Ayah naik motor.','Ibu masak nasi.'];
+const KATA=['ibu','bapak','adik','kakak','buku','meja','kursi','bola','roti','susu','topi','sapu','mata','kaki','baju','nasi','ikan','pisang','sepatu','tas','pintu','jendela','lampu','sekolah','guru','teman','rumah','pasar','kebun','bunga'],KAL=['Ini apel.','Aku makan roti.','Adik minum susu.','Kakak baca buku.','Ayah naik motor.','Ibu masak nasi.','Aku suka bola.','Kami belajar di sekolah.','Bunga itu cantik.','Ibu pergi ke pasar.','Aku cuci tangan.','Kucing minum susu.'];
 /* Soal menebali bawaan (font Trace) tanpa AI dan tanpa Bank Soal */
 function buatMenebali(d){
- const G=Object.values(EMO),r=m=>Math.floor(Math.random()*m),ki=KLS.indexOf(d.kelas);
- const T=[()=>'Tebalkan huruf vokal berikut!<br><span class="tb">a i u e o</span>',
+ const G=Object.values(EMO),r=m=>Math.floor(Math.random()*m),ki=KLS.indexOf(d.kelas),dk=acak(KATA),dl=acak(KAL);let ik=0,il=0;
+ const T=[()=>'Tebalkan huruf vokal berikut!<br><span class="tb">'+acak(['a','i','u','e','o']).slice(0,3+r(3)).join(' ')+'</span>',
   ()=>'Tebalkan huruf besar berikut!<br><span class="tb">'+acak('ABCDEFGHIJKLMNOPRSTUW'.split('')).slice(0,5).join(' ')+'</span>',
   ()=>{const a=1+r(5);return 'Tebalkan angka berikut!<br><span class="tb">'+[0,1,2,3,4].map(x=>a+x).join(' ')+'</span>'},
   ()=>{const [e,nm]=acak(acak(G)[0])[0];return 'Tebalkan nama gambar berikut!<br><span class="emo">'+e+'</span><br><span class="tb">'+nm+'</span>'},
-  ()=>'Tebalkan kata berikut!<br><span class="tb">'+acak(KATA)[0]+'</span>',
-  ()=>'Tebalkan kalimat berikut!<br><span class="tb">'+acak(KAL)[0]+'</span>'];
- const pool=ki<3?[0,1,2,3,4,5]:ki<6?[3,4,5]:[4,5];
- const n=Math.min(12,['jPG','jBS','jMj','jIs','jGb','jUr'].reduce((a,x)=>a+(+d[x]||0),0)||10);
- let li='';for(let i=0;i<n;i++)li+='<li>'+T[pool[i%pool.length]]()+'</li>';
+  ()=>'Tebalkan kata berikut!<br><span class="tb">'+dk[ik++%dk.length]+'</span>',
+  ()=>'Tebalkan kalimat berikut!<br><span class="tb">'+dl[il++%dl.length]+'</span>',
+  ()=>{const c=acak('bcdfghjklmnprstw'.split(''))[0];return 'Tebalkan suku kata berikut!<br><span class="tb">'+['a','i','u','e','o'].map(v=>c+v).join(' ')+'</span>'}];
+ const pool=ki<3?[0,1,2,3,4,5,6]:ki<6?[3,4,5]:[4,5];
+ const n=Math.min(40,['jPG','jBS','jMj','jIs','jGb','jUr'].reduce((a,x)=>a+(+d[x]||0),0)||10),pakai=new Set();
+ let li='';for(let i=0;i<n;i++){let h,t=0;do{h=T[pool[i%pool.length]]();t++}while(pakai.has(h)&&t<15);pakai.add(h);li+='<li>'+h+'</li>'}
  return '<h3>Petunjuk</h3><p>Tebalkan tulisan putus-putus di bawah ini dengan rapi!</p><ol>'+li+'</ol>';
 }
 function tampilMenebali(d){
