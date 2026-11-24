@@ -78,6 +78,7 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
 .tb{font-family:'Trace',sans-serif;font-size:26pt;line-height:2.3;letter-spacing:.05em}
 .paper table.idn td{border:0;padding:3px 4px}.kop img{display:block}
 .ck{display:flex;gap:.7rem;align-items:center;font-weight:700;margin:1rem 0}.ck input{width:30px;min-height:30px}
+.emo{font-size:30pt;line-height:1.5;letter-spacing:.08em}
 .pb{page-break-before:always;border-top:2px dashed #888;margin-top:20px;padding-top:12px}
 .arsip li{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.7rem 0;border-bottom:2px solid #0002;list-style:none}
 .arsip ul{padding:0;margin:0}
@@ -481,18 +482,39 @@ async function poolBank(d){
  }
  return {pool,level,info};
 }
+const EMO={buah:[['🍎','apel'],['🍌','pisang'],['🍇','anggur'],['🍊','jeruk'],['🍓','stroberi'],['🍉','semangka'],['🍍','nanas']],hewan:[['🐱','kucing'],['🐶','anjing'],['🐮','sapi'],['🐔','ayam'],['🐟','ikan'],['🐰','kelinci'],['🐘','gajah'],['🦁','singa']],kendaraan:[['🚗','mobil'],['🚲','sepeda'],['✈️','pesawat'],['🚢','kapal'],['🚌','bus']],benda:[['🏠','rumah'],['⚽','bola'],['📚','buku'],['✏️','pensil'],['🪑','kursi'],['🎒','tas']]};
+/* Soal bergambar bawaan (emoji) tanpa AI dan tanpa Bank Soal */
+function buatGambarEmoji(kode,n){
+ const G=Object.values(EMO),out=[],L=['A','B','C','D'],dr=(x,k)=>'<span class="emo">'+x.repeat(k)+'</span>',r=m=>Math.floor(Math.random()*m);
+ for(let i=0;i<n;i++){
+  const p=acak(acak(G)[0]),[e,nm]=p[0],[e2,n2]=p[1],j=2+r(5),k=j+1+r(2),t=i%3;let isi,kunci;
+  if(kode==='PG'){
+   let op,bn;
+   if(t===0){op=acak([...new Set([j,j+1,j+2,j>2?j-1:j+3])].map(String));bn=String(j);isi='Ada berapa gambar '+nm+' di bawah ini?<br>'+dr(e,j)}
+   else if(t===1){op=acak([nm,...p.slice(1,4).map(x=>x[1])]);bn=nm;isi='Gambar ini adalah ....<br>'+dr(e,1)}
+   else{op=acak([nm,n2,'sama banyak']);bn=n2;isi='Mana yang jumlahnya lebih banyak?<br>'+dr(e,j)+'<br>'+dr(e2,k)}
+   isi+=op.map((o,x)=>'<br>'+L[x]+'. '+o).join('');kunci=L[op.indexOf(bn)];
+  }else{
+   if(t===0){isi='Tulislah nama gambar berikut!<br>'+dr(e,1);kunci=nm}
+   else if(t===1){isi='Hitunglah jumlah gambar berikut, lalu tulis angkanya!<br>'+dr(e,j);kunci=String(j)}
+   else{isi='Ada '+j+' '+nm+' dan '+k+' '+n2+'. Berapa jumlah semuanya?<br>'+dr(e,j)+' '+dr(e2,k);kunci=String(j+k)}
+  }
+  out.push({emoji:true,gb:true,tipe:kode,judul:'',isi,kunci});
+ }
+ return out;
+}
 async function rakitDariBank(d){
  const {pool,level,info}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
  if(!butir.length){const u=pool.find(i=>i.utuh);return u?{html:u.raw,kunci:u.kunciUtuh,jumlah:0,utuh:u.judul,level}:{jumlah:0,info}}
  const minta={};let ada=false;TIPE.forEach(([k])=>{const n=+d[k]||0;if(n>0){minta[k]=n;ada=true}});if(!ada)minta.jPG=10;
  {const c={};butir.forEach(i=>{const x=i.tipe+(i.gb?'+gambar':'');c[x]=(c[x]||0)+1});console.info('Bank Soal yang cocok:',c)}
- const nGb=+d.jGb||0,gbN={};
+ const nGb=d.ktn==='Tunanetra'?0:(+d.jGb||0),gbN={};
  if(nGb>0){if(minta.jUr&&minta.jPG){gbN.UR=Math.floor(nGb/2);gbN.PG=nGb-gbN.UR}else if(minta.jUr)gbN.UR=nGb;else gbN.PG=nGb}
  const dipakai=new Set(),pilih={},kurang=[];
  TIPE.forEach(([k,kode,nama])=>{
   const n=minta[k]||0,g=gbN[kode]||0;if(!n&&!g)return;
-  const gb=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&it.gb)).slice(0,g);gb.forEach(i=>dipakai.add(i));
-  const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&(nGb>0?!it.gb:true))).slice(0,n);biasa.forEach(i=>dipakai.add(i));
+  const gb=(kode==='PG'||kode==='UR')?buatGambarEmoji(kode,g):[];
+  const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&!it.gb)).slice(0,n);biasa.forEach(i=>dipakai.add(i));
   if(kode==='UR'&&biasa.length<n){const tambah=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe==='IS'&&!it.gb)).slice(0,n-biasa.length);tambah.forEach(i=>{dipakai.add(i);biasa.push(i)})}
   pilih[k]=acak([...gb,...biasa]);
   if(biasa.length<n)kurang.push(nama+' '+biasa.length+'/'+n);
@@ -502,8 +524,8 @@ async function rakitDariBank(d){
  const sumber=new Set();
  TIPE.forEach(([k,kode,nama,ptj])=>{
   const a=pilih[k];if(!a||!a.length)return;
-  if(kode==='PG')a.forEach(i=>{const r=acakOpsi(i);if(r){i.isi=r.isi;i.kunci=r.kunci;i.opsi=null}});
-  const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>sumber.add(i.judul));
+  if(kode==='PG')a.forEach(i=>{if(i.emoji)return;const r=acakOpsi(i);if(r){i.isi=r.isi;i.kunci=r.kunci;i.opsi=null}});
+  const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>{if(!i.emoji)sumber.add(i.judul)});
   hs+=`<h3>${h}</h3><p>${ptj}</p>`+(kode==='MJ'?a.map(i=>i.raw).join(''):'<ol>'+a.map(i=>'<li>'+i.isi+'</li>').join('')+'</ol>');
   hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?(/^[A-Ea-eSs]$/.test(i.kunci)?'<b>'+i.kunci+'</b>':esc(i.kunci)):'<i>(kunci tidak ditemukan di berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
  });
