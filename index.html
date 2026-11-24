@@ -399,7 +399,7 @@ function pecahBank(b){
   if(mKunci){const lb=t.replace(/^[a-e]\s*[\.\)]\s*/i,'').match(/^(?:kunci\s+)?(pilihan ganda|pg|benar[\s-]*(?:atau\s*)?salah|isian(?: singkat)?|esai(?: singkat)?|uraian|menjodohkan)\b([^:]{0,30}:|)\s*([\s\S]*)$/i);
    if(lb){const sc=ctx.kelas+'|'+ctx.mapel;(kt[sc]=kt[sc]||[]).push(lb[1]+': '+lb[3]);return}}
   if(k.opsi){if(cur)cur.parts.push(k.el);return}
-  const kepala=/^H[1-6]$/.test(k.el.tagName)||(!k.li&&!reNo.test(t)&&t.length<130&&(/^(kelas|mata pelajaran|mapel|bagian|petunjuk|sumatif|penilaian|asesmen|soal|tema|materi)\b/.test(tl)||/^[a-e]\s*[\.\)]\s*(soal\s+)?(pilihan|benar|isian|menjodohkan|uraian|esai|essay|bergambar)/.test(tl)||(!reOp.test(t)&&t.length<60&&MP.some(([m,r])=>r.test(tl)))));
+  const kepala=/^H[1-6]$/.test(k.el.tagName)||(!k.li&&!reNo.test(t)&&t.length<130&&(/^(kelas|mata pelajaran|mapel|bagian|petunjuk|sumatif|penilaian|asesmen|soal|tema|materi)\b/.test(tl)||/^((?:[a-e]|[ivx]{1,4})\s*[\.\):]\s*)?(soal\s+)?(pilihan ganda|benar[\s-]*(atau\s*)?salah|isian( singkat)?|menjodohkan|uraian|esai( singkat)?|essay|bergambar)(?![a-z0-9])/.test(tl)||(!reOp.test(t)&&t.length<60&&MP.some(([m,r])=>r.test(tl)))));
   if(kepala){
    mKunci=false;
    const kk=t.match(/kelas\s*[:\-]?\s*(\d{1,2}|[ivx]{1,4})\b(?!\s*[-–]\s*\w)/i);if(kk){ctx.kelas=rom(kk[1]);ctx.tipe=''}
@@ -435,6 +435,8 @@ function pecahBank(b){
   it.gb=els.some(e=>e.querySelector('img,.gambar'))||/\[gambar/i.test(it.teks);
   const punyaOpsi=(it.teks.match(/(^|\s)[a-eA-E][\.\)]\s/g)||[]).length>=2||!!els[0].querySelector('ol,ul');
   if(!it.tipe)it.tipe=punyaOpsi?'PG':/\.{3,}|_{3,}/.test(it.teks)?'IS':'UR';
+  else if(it.tipe==='PG'&&!punyaOpsi)it.tipe=/\.{3,}|_{3,}/.test(it.teks)&&it.teks.length<160?'IS':'UR';
+  else if((it.tipe==='UR'||it.tipe==='IS')&&(it.teks.match(/(^|\s)[a-eA-E][\.\)]\s/g)||[]).length>=3)it.tipe='PG';
   it.raw=els.map(e=>e.outerHTML).join('');
   const k0=els[0].cloneNode(true);
   k0.querySelectorAll('ol').forEach(o=>o.setAttribute('type','a'));
@@ -473,6 +475,7 @@ async function rakitDariBank(d){
  const {pool,level}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
  if(!butir.length){const u=pool.find(i=>i.utuh);return u?{html:u.raw,kunci:u.kunciUtuh,jumlah:0,utuh:u.judul,level}:{jumlah:0}}
  const minta={};let ada=false;TIPE.forEach(([k])=>{const n=+d[k]||0;if(n>0){minta[k]=n;ada=true}});if(!ada)minta.jPG=10;
+ {const c={};butir.forEach(i=>{const x=i.tipe+(i.gb?'+gambar':'');c[x]=(c[x]||0)+1});console.info('Bank Soal yang cocok:',c)}
  const nGb=+d.jGb||0,gbN={};
  if(nGb>0){if(minta.jUr&&minta.jPG){gbN.UR=Math.floor(nGb/2);gbN.PG=nGb-gbN.UR}else if(minta.jUr)gbN.UR=nGb;else gbN.PG=nGb}
  const dipakai=new Set(),pilih={},kurang=[];
@@ -481,8 +484,8 @@ async function rakitDariBank(d){
   const gb=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&it.gb)).slice(0,g);gb.forEach(i=>dipakai.add(i));
   const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&(nGb>0?!it.gb:true))).slice(0,n);biasa.forEach(i=>dipakai.add(i));
   pilih[k]=acak([...gb,...biasa]);
-  if(biasa.length<n)kurang.push(nama+' '+biasa.length+' dari '+n);
-  if(gb.length<g)kurang.push(nama+' bergambar '+gb.length+' dari '+g);
+  if(biasa.length<n)kurang.push(nama+' '+biasa.length+'/'+n);
+  if(gb.length<g)kurang.push(nama+' bergambar '+gb.length+'/'+g);
  });
  let hs='<h3>Petunjuk</h3><p>Bacalah setiap soal dengan teliti, lalu kerjakan dengan benar!</p>',hk='<h3>Kunci Jawaban</h3>',tot=0,bi=0;
  const sumber=new Set();
@@ -539,7 +542,7 @@ async function generate(){
   const psn=/quota|exceeded/i.test(e.message)?'Kuota gratis AI sedang habis (pulih otomatis tiap hari).':e.message;
   console.error('AI gagal:',e.message);
   if(mode==='soal'){try{const h=await rakitDariBank(d);
-   if(h.jumlah||h.utuh){tampilBank(d,h);ok=true;st.textContent='Berhasil.';console.info('Soal dari Bank Soal',h.level||'',h.kurang||'')}}catch(x){console.error(x)}}
+   if(h.jumlah||h.utuh){tampilBank(d,h);ok=true;st.textContent='Berhasil.'+(h.kurang&&h.kurang.length?' Stok Bank Soal kurang: '+h.kurang.join(', ')+'.':'');console.info('Soal dari Bank Soal',h.level||'')}}catch(x){console.error(x)}}
   if(!ok)st.textContent='Gagal.';
  }
  b.disabled=false;
