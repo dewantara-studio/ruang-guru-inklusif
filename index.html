@@ -514,7 +514,7 @@ async function rakitDariBank(d){
  TIPE.forEach(([k,kode,nama])=>{
   const n=minta[k]||0,g=gbN[kode]||0;if(!n&&!g)return;
   const gb=(kode==='PG'||kode==='UR')?buatGambarEmoji(kode,g):[];
-  const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&!it.gb)).slice(0,n);biasa.forEach(i=>dipakai.add(i));
+  const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&!it.gb)).sort((x,y)=>(y.kunci?1:0)-(x.kunci?1:0)).slice(0,n);biasa.forEach(i=>dipakai.add(i));
   if(kode==='UR'&&biasa.length<n){const tambah=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe==='IS'&&!it.gb)).slice(0,n-biasa.length);tambah.forEach(i=>{dipakai.add(i);biasa.push(i)})}
   pilih[k]=acak([...gb,...biasa]);
   if(biasa.length<n)kurang.push(nama+' '+biasa.length+'/'+n);
@@ -527,7 +527,7 @@ async function rakitDariBank(d){
   if(kode==='PG')a.forEach(i=>{if(i.emoji)return;const r=acakOpsi(i);if(r){i.isi=r.isi;i.kunci=r.kunci;i.opsi=null}});
   const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>{if(!i.emoji)sumber.add(i.judul)});
   hs+=`<h3>${h}</h3><p>${ptj}</p>`+(kode==='MJ'?a.map(i=>i.raw).join(''):'<ol>'+a.map(i=>'<li>'+i.isi+'</li>').join('')+'</ol>');
-  hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?(/^[A-Ea-eSs]$/.test(i.kunci)?'<b>'+i.kunci+'</b>':esc(i.kunci)):'<i>(kunci tidak ditemukan di berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
+  hk+=`<h3>${h}</h3>`+(kode==='MJ'?'':(kode==='PG'||kode==='BS'?'<p>'+a.map((i,x)=>(x+1)+'. <b>'+(i.kunci?esc(i.kunci):'.....')+'</b>').join(' &nbsp;&nbsp; ')+'</p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?esc(i.kunci):'.....')+'</li>').join('')+'</ol>'));
  });
  if(!tot)return {jumlah:0,info:'Jenis soal yang diminta tidak ditemukan di Bank Soal '+d.mapel+' kelas '+d.kelas+'.'};
  return {html:hs,kunci:hk,jumlah:tot,level,kurang,sumber:sumber.size};
