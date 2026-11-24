@@ -271,7 +271,7 @@ const opt=(o,sel)=>Object.keys(o).map(k=>`<option ${k===sel?'selected':''}>${esc
 function form(v){
  const p=ls.get('ag_prof',{sekolah:Object.keys(SEKOLAH)[0],alamat:SEKOLAH[Object.keys(SEKOLAH)[0]]});
  const extra={
-  soal:`<label>Model soal dan jumlahnya (isi 0 bila tidak dipakai)</label><div class="row"><div><label for="jPG">Pilihan ganda</label><input id="jPG" type="number" min="0" max="40" value="10"></div><div><label for="jBS">Benar-Salah</label><input id="jBS" type="number" min="0" max="20" value="0"></div><div><label for="jMj">Menjodohkan</label><input id="jMj" type="number" min="0" max="10" value="0"></div><div><label for="jIs">Isian singkat</label><input id="jIs" type="number" min="0" max="20" value="0"></div><div><label for="jGb">Soal bergambar</label><input id="jGb" type="number" min="0" max="20" value="0"></div><div><label for="jUr">Uraian</label><input id="jUr" type="number" min="0" max="10" value="2"></div></div>
+  soal:`<label>Model soal dan jumlahnya (isi 0 bila tidak dipakai)</label><div class="row"><div><label for="jPG">Pilihan ganda</label><input id="jPG" type="number" min="0" max="40" value="10"></div><div><label for="jBS">Benar-Salah</label><input id="jBS" type="number" min="0" max="20" value="0"></div><div><label for="jMj">Menjodohkan</label><input id="jMj" type="number" min="0" max="10" value="0"></div><div><label for="jIs">Isian singkat</label><input id="jIs" type="number" min="0" max="20" value="0"></div><div><label for="jGb">Bergambar (tambahan, disisipkan di PG &amp; uraian)</label><input id="jGb" type="number" min="0" max="20" value="2"></div><div><label for="jUr">Uraian</label><input id="jUr" type="number" min="0" max="10" value="2"></div></div>
    <label for="jenis">Jenis penilaian</label><select id="jenis"><option>Ulangan Harian</option><option>Sumatif Tengah Semester</option><option>Sumatif Akhir Semester</option></select>
    <label for="kesul">Tingkat kesulitan soal</label><select id="kesul"><option>Mudah</option><option selected>Sedang</option><option>Menantang</option></select>
    <label class="ck"><input type="checkbox" id="tebal"> Soal menebali (font Trace, huruf putus-putus)</label>
@@ -318,7 +318,12 @@ function prompt(d){
  const base=`Kamu guru pendidikan khusus ahli Kurikulum Merdeka di Indonesia. Buat ${MODE[mode]} untuk mata pelajaran ${d.mapel}, kelas ${d.kelas} ${d.jenjang}, peserta didik ${d.ktn} dengan kemampuan ${d.kemam}, materi: ${d.topik||'sesuai capaian pembelajaran umum untuk kelas ini'}.
 Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhana. `;
  const fmt=`Keluarkan HANYA fragmen HTML (h3, p, ol, ul, table, strong) tanpa markdown, tanpa kop surat, tanpa tag html/body.`;
- if(mode==='soal')return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jGb','soal bergambar (pertanyaan atau pilihan jawaban berupa gambar)'],['jUr','uraian']].filter(([k])=>+d[k]>0).map(([k,n])=>d[k]+' soal '+n).join('; ')||'10 soal pilihan ganda'}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Setelah seluruh soal selesai, tulis satu baris persis <!--KUNCI--> lalu <h3>Kunci Jawaban dan Pembahasan</h3> berisi kunci semua bagian (pembahasan maksimal satu kalimat per soal), jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru di bagian kunci. Jangan menaruh kunci atau jawaban di bagian soal. ${d.tebal?' MODE MENEBALI: peserta didik menebali tulisan. Buat soal berupa huruf, angka, kata, atau kalimat SANGAT pendek (maksimal 5 kata) yang harus ditebali; bungkus setiap teks yang harus ditebali dengan <span class="tb">...</span>, satu per baris dengan jarak lega. Petunjuk dan nomor soal jangan dibungkus. Hindari pilihan ganda panjang.':''} ${fmt}`;
+ if(mode==='soal'){
+  const nG=d.ktn==='Tunanetra'?0:(+d.jGb||0),aPG=+d.jPG||0,aUR=+d.jUr||0;
+  const gUR=nG&&aUR?(aPG?Math.floor(nG/2):nG):0,gPG=nG-gUR;
+  const jml={jPG:aPG+gPG,jUr:aUR+gUR};
+  const model=[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jUr','uraian']].map(([k,n])=>[k,n,k in jml?jml[k]:(+d[k]||0)]).filter(x=>x[2]>0).map(([k,n,j])=>j+' soal '+n+(k==='jPG'&&gPG?' (termasuk '+gPG+' soal bergambar)':k==='jUr'&&gUR?' (termasuk '+gUR+' soal bergambar)':'')).join('; ')||'10 soal pilihan ganda';
+  return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${model}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. SOAL BERGAMBAR BUKAN BAGIAN TERSENDIRI: soal bergambar disisipkan di dalam bagian pilihan ganda dan uraian, bercampur dengan soal biasa dan tidak dikelompokkan, supaya soal variatif. Soal bergambar berarti pertanyaan atau pilihan jawabannya memuat gambar. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Setelah seluruh soal selesai, tulis satu baris persis <!--KUNCI--> lalu <h3>Kunci Jawaban dan Pembahasan</h3> berisi kunci semua bagian (pembahasan maksimal satu kalimat per soal), jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru di bagian kunci. Jangan menaruh kunci atau jawaban di bagian soal. ${d.tebal?' MODE MENEBALI: peserta didik menebali tulisan. Buat soal berupa huruf, angka, kata, atau kalimat SANGAT pendek (maksimal 5 kata) yang harus ditebali; bungkus setiap teks yang harus ditebali dengan <span class="tb">...</span>, satu per baris dengan jarak lega. Petunjuk dan nomor soal jangan dibungkus. Hindari pilihan ganda panjang.':''} ${fmt}`;}
  if(mode==='modul')return base+`Alokasi waktu ${d.dur}. Susun modul ajar lengkap: Informasi Umum, Kompetensi Awal, Profil Pelajar Pancasila, Sarana Prasarana, Karakteristik Peserta Didik, Model Pembelajaran, Tujuan Pembelajaran, Pemahaman Bermakna, Pertanyaan Pemantik, Kegiatan Pembelajaran (pendahuluan, inti, penutup dengan waktu), Asesmen (rubrik sederhana), Strategi Diferensiasi dan Akomodasi sesuai ketunaan, Refleksi Guru dan Peserta Didik. ${fmt}`;
  return base+`Buat LKPD dengan ${d.jKeg} kegiatan bertahap: Identitas (nama, kelas, tanggal), Tujuan, Petunjuk (langkah pendek), Kegiatan 1-${d.jKeg} (tiap kegiatan ada ruang jawab bergaris atau tabel), Refleksi dengan pilihan ekspresi sederhana, dan Kolom Penilaian Guru. ${fmt}`;
 }
@@ -354,8 +359,14 @@ function tampilHasil(){
 /* ====== PEMILAH BANK SOAL: pecah per butir, saring sesuai kebutuhan, lalu acak ====== */
 const rom=s=>{s=String(s||'').trim().toUpperCase();return {'1':'I','2':'II','3':'III','4':'IV','5':'V','6':'VI','7':'VII','8':'VIII','9':'IX','10':'X','11':'XI','12':'XII'}[s]||s};
 const acak=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const TIPE=[['jPG','PG','Pilihan Ganda','Berilah tanda silang (X) pada huruf di depan jawaban yang benar!'],['jBS','BS','Benar - Salah','Tulislah B jika pernyataan benar dan S jika pernyataan salah!'],['jMj','MJ','Menjodohkan','Jodohkanlah dengan benar!'],['jIs','IS','Isian Singkat','Isilah titik-titik dengan jawaban yang benar!'],['jGb','GB','Soal Bergambar','Perhatikan gambar, lalu jawablah pertanyaannya!'],['jUr','UR','Uraian','Jawablah pertanyaan berikut dengan benar!']];
+const TIPE=[['jPG','PG','Pilihan Ganda','Berilah tanda silang (X) pada huruf di depan jawaban yang benar!'],['jBS','BS','Benar - Salah','Tulislah B jika pernyataan benar dan S jika pernyataan salah!'],['jMj','MJ','Menjodohkan','Jodohkanlah dengan benar!'],['jIs','IS','Isian Singkat','Isilah titik-titik dengan jawaban yang benar!'],['jUr','UR','Uraian','Jawablah pertanyaan berikut dengan benar!']];
 const ringkasKelas=k=>{const l=String(k||'').split(',').map(rom).filter(Boolean),i=l.map(x=>KLS.indexOf(x));if(l.length>=3&&i.every(x=>x>=0)&&i[i.length-1]-i[0]===l.length-1&&i.every((x,n)=>!n||x===i[n-1]+1))return l[0]+'-'+l[l.length-1];return l.join(', ')||'-'};
+function acakOpsi(it){
+ if(!it.opsi||!/^[A-E]$/.test(it.kunci||'')||it.opsi.some(o=>o.tetap))return null;
+ const ben=it.opsi.findIndex(o=>o.lab===it.kunci);if(ben<0)return null;
+ const u=acak(it.opsi.map((o,i)=>i));
+ return {isi:it.stem+u.map((oi,n)=>'<div>'+'ABCDE'[n]+'. '+it.opsi[oi].html+'</div>').join(''),kunci:'ABCDE'[u.indexOf(ben)]};
+}
 function pecahBank(b){
  const dok=new DOMParser().parseFromString('<body>'+(b.html||'')+'</body>','text/html');
  const blok=[],BLK=/^(P|DIV|OL|UL|H[1-6]|TABLE|SECTION|BLOCKQUOTE|PRE)$/;
@@ -403,14 +414,16 @@ function pecahBank(b){
  });
  const ktm={};
  Object.entries(kt).forEach(([sc,arr])=>{
-  const tx=arr.join(' '),re=/(pilihan ganda|\bpg\b|benar[\s-]*(?:atau\s*)?salah|menjodohkan|isian(?: singkat)?|esai(?: singkat)?|uraian)(?:[^:|]{0,30}:|\s*(?=\d))/gi,pos=[];let m;
+  const tx=arr.join('\n'),re=/(pilihan ganda|\bpg\b|benar[\s-]*(?:atau\s*)?salah|menjodohkan|isian(?: singkat)?|esai(?: singkat)?|uraian)(?:[^:|]{0,30}:|\s*(?=\d))/gi,pos=[];let m;
   while((m=re.exec(tx)))pos.push({i:m.index,e:re.lastIndex,j:jenisTeks(m[1].toLowerCase())});
   const awal=pos.length?tx.slice(0,pos[0].i):tx;
   if(awal.trim()&&!pos.some(q=>q.j==='PG')){ktm[sc]=ktm[sc]||{};const h0=ktm[sc].PG=ktm[sc].PG||{};awal.replace(/(\d{1,3})[\s\.\):\-=–]*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h0[+a]=c.toUpperCase();return x})}
   pos.forEach((p,n)=>{
    const seg=tx.slice(p.e,n+1<pos.length?pos[n+1].i:undefined).trim();ktm[sc]=ktm[sc]||{};const h=ktm[sc][p.j]=ktm[sc][p.j]||{};
    if(p.j==='PG'||p.j==='BS')seg.replace(/(\d{1,3})[\s\.\):\-=–]*([A-Ea-eSs])(?![A-Za-z])/g,(x,a,c)=>{h[+a]=c.toUpperCase();return x});
-   else(seg.includes('|')?seg.split('|'):seg.split(/\s(?=\d{1,3}\s*[\.\)]\s*\S)/)).forEach(q=>{const mm=q.trim().match(/^(\d{1,3})\s*[\.\):\-]?\s*([\s\S]+)$/);if(mm)h[+mm[1]]=mm[2].trim()});
+   else if(seg.includes('|'))seg.split('|').forEach(q=>{const mm=q.trim().match(/^(\d{1,3})\s*[\.\):\-]?\s*([\s\S]+)$/);if(mm)h[+mm[1]]=mm[2].replace(/\s+/g,' ').trim()});
+   else if(seg.includes('\n')){let last=0,u=null;seg.split('\n').forEach(l=>{const mm=l.match(/^\s*(\d{1,2})\s*[\.\):\-]\s*([\s\S]*)$/);if(mm&&+mm[1]===last+1){last++;u=+mm[1];h[u]=mm[2].trim()}else if(u&&l.trim())h[u]+=' '+l.trim()})}
+   else{const ps=[];let from=0,n=1;for(;;){const r=new RegExp('(^|\\s)'+n+'\\s*[\\.\\):\\-]\\s*','g');r.lastIndex=from;const m2=r.exec(seg);if(!m2)break;ps.push({n,s:m2.index+m2[1].length,e:r.lastIndex});from=r.lastIndex;n++}ps.forEach((q,i)=>{h[q.n]=seg.slice(q.e,i+1<ps.length?ps[i+1].s:undefined).trim()})}
   });
  });
  const km={},dup={},cnt={};
@@ -427,6 +440,12 @@ function pecahBank(b){
   k0.querySelectorAll('ol').forEach(o=>o.setAttribute('type','a'));
   if(!it.li&&it.tipe!=='MJ'){const w=dok.createTreeWalker(k0,4);let n;while((n=w.nextNode())){if(n.textContent.trim()){n.textContent=n.textContent.replace(reNo,'');break}}}
   it.isi=k0.innerHTML+els.slice(1).map(e=>'<div>'+e.innerHTML+'</div>').join('');
+  let stem='',ops=[];
+  if(it.li){const c=[...k0.children],ix=c.findIndex(x=>/^(DIV|P)$/.test(x.tagName)&&reOp.test(rapi(x)));if(ix>=0){ops=c.slice(ix).filter(x=>/^(DIV|P)$/.test(x.tagName)&&reOp.test(rapi(x)));ops.forEach(x=>x.remove());stem=k0.innerHTML}}
+  else if(els.length>1&&els.slice(1).every(e=>reOp.test(rapi(e)))){ops=els.slice(1).map(e=>e.cloneNode(true));stem=k0.innerHTML}
+  if(ops.length>=2&&ops.length<=6){it.stem=stem;it.opsi=ops.map(o=>{const lab=(rapi(o).match(/^\s*([a-eA-E])/)||[])[1].toUpperCase(),w=dok.createTreeWalker(o,4);let n;while((n=w.nextNode())){if(n.textContent.trim()){n.textContent=n.textContent.replace(/^\s*[a-eA-E]\s*[\.\)]\s*/,'');break}}return{lab,html:o.innerHTML.trim(),tetap:/semua|keduanya|tidak ada|salah semua|benar semua|\b[a-e]\s*(dan|,|&)\s*[a-e]\b/i.test(rapi(o))}})}
+  const bt=rapi(stem?(()=>{const d2=dok.createElement('div');d2.innerHTML=stem;return d2})():els[0]);
+  it.yatim=!it.gb&&!/["“”]/.test(bt)&&bt.length<260&&/(teks|bacaan|wacana|paragraf|gambar|tabel|grafik|puisi|cerita|dongeng|berita|denah|peta|diagram)[^.?!"“]{0,30}(di atas|tersebut|berikut ini|di bawah)|berdasarkan\s+(teks|bacaan|gambar|tabel|grafik|diagram|cerita|puisi)|(bacalah|perhatikan)\s+(teks|gambar|tabel|grafik|puisi|bacaan)/i.test(bt);
   const kb=((ktm[it.kelas+'|'+it.mapel]||{})[it.tipe]||{})[it.no];
   it.kunci=kb||((it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&cnt[it.no]===1?km[it.no]:'');
  });
@@ -447,23 +466,29 @@ async function poolBank(d){
  if(d.topik){const kt=d.topik.toLowerCase().split(/\s+/).filter(w=>w.length>3);const tm=pool.filter(it=>kt.some(w=>it.teks.toLowerCase().includes(w)));if(tm.length>=3)pool=tm}
  const ada=new Set();pool=pool.filter(it=>{const k=it.teks.slice(0,80).toLowerCase();if(ada.has(k))return false;ada.add(k);return true});
  if(d.ktn==='Tunanetra')pool=pool.filter(it=>!it.gb);
+ {const bersih=pool.filter(it=>!it.yatim);if(bersih.length)pool=bersih}
  return {pool,level};
 }
 async function rakitDariBank(d){
  const {pool,level}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
  if(!butir.length){const u=pool.find(i=>i.utuh);return u?{html:u.raw,kunci:u.kunciUtuh,jumlah:0,utuh:u.judul,level}:{jumlah:0}}
  const minta={};let ada=false;TIPE.forEach(([k])=>{const n=+d[k]||0;if(n>0){minta[k]=n;ada=true}});if(!ada)minta.jPG=10;
+ const nGb=+d.jGb||0,gbN={};
+ if(nGb>0){if(minta.jUr&&minta.jPG){gbN.UR=Math.floor(nGb/2);gbN.PG=nGb-gbN.UR}else if(minta.jUr)gbN.UR=nGb;else gbN.PG=nGb}
  const dipakai=new Set(),pilih={},kurang=[];
- [...TIPE].sort((a,c)=>(c[1]==='GB')-(a[1]==='GB')).forEach(([k,kode,nama])=>{
-  if(!minta[k])return;
-  const a=acak(butir.filter(it=>!dipakai.has(it)&&(kode==='GB'?it.gb:it.tipe===kode))).slice(0,minta[k]);
-  a.forEach(i=>dipakai.add(i));pilih[k]=a;
-  if(a.length<minta[k])kurang.push(nama+' '+a.length+' dari '+minta[k]);
+ TIPE.forEach(([k,kode,nama])=>{
+  const n=minta[k]||0,g=gbN[kode]||0;if(!n&&!g)return;
+  const gb=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&it.gb)).slice(0,g);gb.forEach(i=>dipakai.add(i));
+  const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&(nGb>0?!it.gb:true))).slice(0,n);biasa.forEach(i=>dipakai.add(i));
+  pilih[k]=acak([...gb,...biasa]);
+  if(biasa.length<n)kurang.push(nama+' '+biasa.length+' dari '+n);
+  if(gb.length<g)kurang.push(nama+' bergambar '+gb.length+' dari '+g);
  });
  let hs='<h3>Petunjuk</h3><p>Bacalah setiap soal dengan teliti, lalu kerjakan dengan benar!</p>',hk='<h3>Kunci Jawaban</h3>',tot=0,bi=0;
  const sumber=new Set();
  TIPE.forEach(([k,kode,nama,ptj])=>{
   const a=pilih[k];if(!a||!a.length)return;
+  if(kode==='PG')a.forEach(i=>{const r=acakOpsi(i);if(r){i.isi=r.isi;i.kunci=r.kunci;i.opsi=null}});
   const h='ABCDEF'[bi++]+'. '+nama;tot+=a.length;a.forEach(i=>sumber.add(i.judul));
   hs+=`<h3>${h}</h3><p>${ptj}</p>`+(kode==='MJ'?a.map(i=>i.raw).join(''):'<ol>'+a.map(i=>'<li>'+i.isi+'</li>').join('')+'</ol>');
   hk+=`<h3>${h}</h3>`+(kode==='MJ'?'<p><i>Lihat kunci pada berkas aslinya di Bank Soal.</i></p>':'<ol>'+a.map(i=>'<li>'+(i.kunci?(/^[A-Ea-eSs]$/.test(i.kunci)?'<b>'+i.kunci+'</b>':esc(i.kunci)):'<i>(kunci tidak ditemukan di berkas "'+esc(i.judul)+'" no. '+i.no+')</i>')+'</li>').join('')+'</ol>');
@@ -488,7 +513,7 @@ async function generate(){
  const b=$('#gen');b.disabled=true;st.innerHTML='<span class="load"></span>Sedang menyusun, mohon tunggu sekitar 10-20 detik...';
  try{
   const imgs=[];const fl=$('#gbr');if(fl)for(const f of [...fl.files].slice(0,4))imgs.push(await muat(f));
-  const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
+  const ket=imgs.length?` Terlampir ${imgs.length} gambar. Buat soal bergambar berdasarkan gambar tersebut dan letakkan di dalam bagian pilihan ganda atau uraian, jangan buat bagian tersendiri. Sisipkan tiap gambar pada soal dengan <img src="GAMBAR_n"> (n = nomor gambar, 1 sampai ${imgs.length}) tepat di tempat gambar dibutuhkan, dan pastikan setiap gambar terpakai.`:'';
   let acuan='';
   try{const M=await store.list('materi'),mp=d.mapel.toLowerCase();
    const cocok=M.filter(m=>(m.ketunaan==='Semua'||m.ketunaan===d.ktn)&&(!m.mapel||mp.includes(m.mapel.toLowerCase())||m.mapel.toLowerCase().includes(mp))).slice(0,3);
