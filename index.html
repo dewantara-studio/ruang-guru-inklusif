@@ -459,21 +459,25 @@ async function poolBank(d){
  const B=(await store.list('bank')).filter(b=>b.mode!=='modul'&&b.mode!=='lkpd');
  const mp=d.mapel.toLowerCase(),kl=rom(d.kelas);
  const semua=B.flatMap(pecahBank);
- const cocokMp=it=>{const m=(it.mapel||'').toLowerCase();return m&&(m.includes(mp)||mp.includes(m))};
+ const mpKuat=it=>{const m=(it.mapel||'').toLowerCase();return m&&(m.includes(mp)||mp.includes(m))};
+ const mpUmum=it=>{const m=(it.mapel||'').trim().toLowerCase();return !m||/^(umum|semua)/.test(m)};
  const jj=k=>{const i=KLS.indexOf(rom(k));return i<0?-1:i<6?0:i<9?1:2};
- let pool=semua.filter(it=>cocokMp(it)&&(it.kelas?it.kelas===kl:it.kelasDoc.length===1&&it.kelasDoc[0]===kl)),level='';
+ const saring=cocokMp=>{let pool=semua.filter(it=>cocokMp(it)&&(it.kelas?it.kelas===kl:it.kelasDoc.length===1?it.kelasDoc[0]===kl:!it.kelasDoc.length)),level='';
  if(!pool.length){pool=semua.filter(it=>cocokMp(it)&&!it.kelas&&it.kelasDoc.includes(kl));if(pool.length)level='berkas Bank Soal memuat beberapa kelas dan kelas tiap soal tidak terbaca, jadi periksa dulu kesesuaian kelasnya'}
  if(!pool.length&&jj(kl)>=0){pool=semua.filter(it=>cocokMp(it)&&jj(it.kelas||it.kelasDoc[0])===jj(kl));if(pool.length)level='tidak ada soal kelas '+d.kelas+', jadi dipakai soal kelas lain pada jenjang yang sama'}
- const pk=pool.filter(it=>!it.ktn||it.ktn==='Semua'||it.ktn===d.ktn);
+ const pk=pool.filter(it=>!it.ktn||/^(semua|umum)/i.test(it.ktn)||it.ktn===d.ktn);
  if(pk.length)pool=pk;else if(pool.length)level+=(level?'; ':'')+'ketunaan soal di Bank Soal berbeda dengan pilihan Anda';
  if(d.topik){const kt=d.topik.toLowerCase().split(/\s+/).filter(w=>w.length>3);const tm=pool.filter(it=>kt.some(w=>it.teks.toLowerCase().includes(w)));if(tm.length>=3)pool=tm}
  const ada=new Set();pool=pool.filter(it=>{const k=it.teks.slice(0,80).toLowerCase();if(ada.has(k))return false;ada.add(k);return true});
  if(d.ktn==='Tunanetra')pool=pool.filter(it=>!it.gb);
  {const bersih=pool.filter(it=>!it.yatim);if(bersih.length)pool=bersih}
+ return {pool,level}};
+ let {pool,level}=saring(mpKuat);
+ if(!pool.length)({pool,level}=saring(it=>mpKuat(it)||mpUmum(it)));
  let info='';
  if(!pool.length){
-  const kl2=[...new Set(semua.filter(cocokMp).flatMap(it=>it.kelas?[it.kelas]:it.kelasDoc))];
-  info=!semua.length?'Bank Soal masih kosong.':!kl2.length?'Bank Soal belum punya soal '+d.mapel+'.':'Bank Soal untuk '+d.mapel+' hanya ada untuk kelas '+kl2.join(', ')+', tidak ada untuk kelas '+d.kelas+'.';
+  const kl2=[...new Set(semua.filter(mpKuat).flatMap(it=>it.kelas?[it.kelas]:it.kelasDoc))],md=[...new Set(semua.map(it=>it.mapel).filter(Boolean))];
+  info=!semua.length?'Bank Soal masih kosong.':!semua.some(mpKuat)?'Bank Soal belum punya soal '+d.mapel+(md.length?' (mata pelajaran yang ada: '+md.join(', ')+').':'.'):!kl2.length?'Soal '+d.mapel+' di Bank Soal belum ditandai kelasnya.':'Bank Soal untuk '+d.mapel+' hanya ada untuk kelas '+kl2.join(', ')+', tidak ada untuk kelas '+d.kelas+'.';
  }
  return {pool,level,info};
 }
