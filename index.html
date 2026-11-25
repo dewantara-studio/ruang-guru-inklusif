@@ -97,6 +97,69 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
  #app{display:block}main{padding:0;max-width:none}.grid{display:block}.stage{border:0;padding:0;background:#fff;overflow:visible}.paper{box-shadow:none;padding:16mm 20mm;max-width:none;-webkit-box-decoration-break:clone;box-decoration-break:clone}
  .pb{border:0;margin:0;padding:0}
 }
+
+/* ===== TAMPILAN LEMBUT (hanya layar, tidak memengaruhi cetak) ===== */
+@media screen{
+:root{--bg:#EEF6F3;--ink:#12302B;--teal:#0F7C7C;--teal2:#14A38F;--sun:#FFC83D;--plum:#7B3FA0;--card:#fff;--fld:#fff;--nav:#0E4F52;--stagebg:#E3EEEA;--bd:rgba(18,48,43,.16);--line:1.5px solid var(--bd);--sh:0 14px 34px rgba(18,48,43,.10),0 2px 6px rgba(18,48,43,.06)}
+html[data-tema=gelap]{--bg:#0E1A18;--ink:#E9F3F0;--card:#152825;--fld:#1B3430;--nav:#081614;--stagebg:#102220;--bd:rgba(233,243,240,.2);--sh:0 14px 34px rgba(0,0,0,.45);--teal:#16938C;--teal2:#1FB9A6}
+body{background:radial-gradient(1100px 560px at 8% -8%,rgba(20,163,143,.20),transparent 60%),radial-gradient(900px 500px at 100% 0,rgba(123,63,160,.13),transparent 55%),var(--bg);background-attachment:fixed}
+:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+.btn{border:0;border-radius:16px;background:linear-gradient(135deg,#FFD65C,#FFB62E);box-shadow:0 6px 14px rgba(255,182,46,.35);transition:transform .15s,box-shadow .15s,filter .15s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn:active{transform:translateY(1px);box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.btn.teal{background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 8px 18px rgba(15,124,124,.35)}
+.btn.ghost{background:var(--fld);border:var(--line);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.btn[aria-pressed=true]{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff}
+input,select,textarea{border:1.5px solid var(--bd);border-radius:14px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--teal2);box-shadow:0 0 0 4px rgba(20,163,143,.25)}
+.card,.box{border:1px solid var(--bd);border-radius:26px}
+.grid>.card:first-child{border-top:5px solid var(--teal2)}
+.card h3{font-size:1.3rem}
+.note{border:1.5px dashed rgba(0,0,0,.25);border-radius:14px}
+/* masuk dan daftar */
+.hero{background:linear-gradient(150deg,#0F7C7C 0%,#14A38F 55%,#35C4A3 100%);border-right:0;border-radius:0 56px 56px 0;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:440px;height:440px;border-radius:50%;background:rgba(255,255,255,.10);right:-150px;top:-130px}
+.hero::after{content:'📚 🧩 ✏️ 🌈';position:absolute;bottom:30px;left:56px;font-size:2.2rem;letter-spacing:.4em;opacity:.95}
+.hero>*{position:relative;z-index:1}
+.hero h1{text-shadow:0 2px 12px rgba(0,0,0,.18)}
+.chips span{border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.2);color:#fff}
+.box{padding:2.2rem;border-radius:30px}
+.tabs{border:0;background:var(--stagebg);padding:5px;border-radius:18px;gap:4px}
+.tabs button{border-radius:14px;background:transparent;transition:background .2s}
+.tabs button[aria-selected=true]{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;box-shadow:0 6px 14px rgba(15,124,124,.3)}
+/* menu samping */
+nav{background:linear-gradient(190deg,#0F6B6B 0%,#0E4F52 45%,#16333B 100%);box-shadow:6px 0 30px rgba(0,0,0,.15)}
+html[data-tema=gelap] nav{background:linear-gradient(190deg,#0C2D2D,#081614)}
+nav .brand{color:#fff;font-size:1.35rem}
+nav .brand::before{content:'🎓 '}
+nav button.nv{border:0;border-radius:16px;transition:background .15s,transform .15s}
+nav button.nv:hover{background:rgba(255,255,255,.13);transform:translateX(3px)}
+nav button.nv[aria-current=true]{background:linear-gradient(135deg,#FFD65C,#FFB62E);color:#10231F;box-shadow:0 8px 18px rgba(0,0,0,.25);transform:none}
+nav .em{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.14);font-size:1.25rem}
+nav button.nv[aria-current=true] .em{background:rgba(255,255,255,.6)}
+.tampil{background:rgba(255,255,255,.08);padding:.7rem;border-radius:18px}
+.tampil .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);box-shadow:none}
+.tampil .btn[aria-pressed=true]{background:var(--sun);color:#10231F;border-color:transparent}
+/* isi */
+main{max-width:1280px}
+.top{background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:.9rem 1.4rem;box-shadow:var(--sh)}
+.top h2{font-size:1.7rem}
+#salam{background:rgba(20,163,143,.16);color:var(--teal);padding:.35rem .95rem;border-radius:99px;font-weight:700}
+#salam::before{content:'👋 '}
+html[data-tema=gelap] #salam{color:#8DEBDD}
+.stage{border:2px dashed var(--bd);border-radius:26px;background:var(--stagebg)}
+.empty::before{content:'✨';display:block;font-size:3rem;margin-bottom:.4rem}
+.paper{border-radius:6px;box-shadow:0 14px 34px rgba(0,0,0,.2)}
+.arsip li{border-bottom:1px solid var(--bd)}
+#view>*{animation:naik .35s ease both}
+@keyframes naik{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#view>*{animation:none}.btn,nav button.nv{transition:none}}
+@media(max-width:860px){
+ .hero{border-radius:0 0 40px 40px;padding:2.2rem 1.5rem 4.5rem}.hero::after{left:1.5rem;bottom:18px;font-size:1.8rem}
+ nav{border-radius:0 0 28px 28px}nav button.nv:hover{transform:none}
+ .top{padding:.8rem 1rem}
+}
+}
 </style>
 </head>
 <body>
