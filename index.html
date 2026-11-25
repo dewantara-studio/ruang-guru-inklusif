@@ -279,8 +279,11 @@ function form(v){
    <label class="ck"><input type="checkbox" id="tebal"> Soal menebali (font Trace, huruf putus-putus)</label>
    <label for="gbr">Gambar untuk dijadikan soal (opsional, maksimal 4)</label><input id="gbr" type="file" accept="image/*" multiple>
    <p style="font-size:.85rem;margin:.3rem 0 0">AI membuat soal berdasarkan gambar yang diunggah.</p>`,
-  modul:`<label for="dur">Alokasi waktu</label><select id="dur"><option>2 x 35 menit (1 pertemuan)</option><option>2 pertemuan</option><option>3 pertemuan</option></select>`,
-  lkpd:`<label for="jKeg">Jumlah kegiatan</label><select id="jKeg"><option>3</option><option>4</option><option>5</option></select>`
+  modul:`<label for="dur">Alokasi waktu</label><select id="dur"><option>2 x 35 menit (1 pertemuan)</option><option>2 pertemuan</option><option>3 pertemuan</option></select>
+   <label for="model">Model pembelajaran</label><select id="model"><option>Pembelajaran Terdiferensiasi</option><option>Discovery Learning</option><option>Problem Based Learning</option><option>Project Based Learning</option><option>Pembelajaran Langsung (Direct Instruction)</option><option>Pembelajaran Kontekstual</option></select>
+   <label for="tujuan">Tujuan pembelajaran (opsional)</label><textarea id="tujuan" placeholder="Kosongkan agar dibuatkan otomatis"></textarea>`,
+  lkpd:`<label for="jKeg">Jumlah kegiatan</label><select id="jKeg"><option>3</option><option>4</option><option>5</option><option>6</option></select>
+   <label class="ck"><input type="checkbox" id="tebal"> LKPD menebali (font Trace, huruf putus-putus)</label>`
  }[mode];
  v.innerHTML=`<div class="grid"><div class="card"><h3>Isi data dulu</h3>
   <label for="sek">Sekolah</label><select id="sek">${opt(SEKOLAH,p.sekolah)}</select>
@@ -326,8 +329,8 @@ Sesuaikan dengan ketunaan: ${KETUNAAN[d.ktn]}. Gunakan Bahasa Indonesia sederhan
   const jml={jPG:aPG+gPG,jUr:aUR+gUR};
   const model=[['jPG','pilihan ganda (opsi A-D, satu benar)'],['jBS','benar-salah (siswa memberi tanda B atau S)'],['jMj','menjodohkan (tabel dua kolom, jawaban diacak)'],['jIs','isian singkat (beri titik-titik)'],['jUr','uraian']].map(([k,n])=>[k,n,k in jml?jml[k]:(+d[k]||0)]).filter(x=>x[2]>0).map(([k,n,j])=>j+' soal '+n+(k==='jPG'&&gPG?' (termasuk '+gPG+' soal bergambar)':k==='jUr'&&gUR?' (termasuk '+gUR+' soal bergambar)':'')).join('; ')||'10 soal pilihan ganda';
   return base+`Jenis: ${d.jenis}, tingkat kesulitan ${d.kesul}. Buat soal dengan model berikut: ${model}. Awali dengan <h3>Petunjuk</h3> singkat, lalu satu bagian <h3> berhuruf (A, B, C...) untuk tiap model, masing-masing dengan petunjuk pengerjaan singkat. SOAL BERGAMBAR BUKAN BAGIAN TERSENDIRI: soal bergambar disisipkan di dalam bagian pilihan ganda dan uraian, bercampur dengan soal biasa dan tidak dikelompokkan, supaya soal variatif. Soal bergambar berarti pertanyaan atau pilihan jawabannya memuat gambar. ATURAN GAMBAR: untuk benda sederhana (hewan, buah, benda, jumlah) pakai emoji berukuran besar; jika butuh gambar nyata atau diagram, tulis <div class="gambar">[Gambar: deskripsi singkat]</div> sebagai tempat guru menyisipkan gambar. Jika ketunaan Tunanetra, jangan buat soal bergambar; ubah menjadi deskripsi verbal. Setelah seluruh soal selesai, tulis satu baris persis <!--KUNCI--> lalu <h3>Kunci Jawaban dan Pembahasan</h3> berisi kunci semua bagian (pembahasan maksimal satu kalimat per soal), jawaban uraian beserta pedoman skor. Tambahkan catatan akomodasi untuk guru di bagian kunci. Jangan menaruh kunci atau jawaban di bagian soal. ${d.tebal?' MODE MENEBALI: peserta didik menebali tulisan. Buat soal berupa huruf, angka, kata, atau kalimat SANGAT pendek (maksimal 5 kata) yang harus ditebali; bungkus setiap teks yang harus ditebali dengan <span class="tb">...</span>, satu per baris dengan jarak lega. Petunjuk dan nomor soal jangan dibungkus. Hindari pilihan ganda panjang.':''} ${fmt}`;}
- if(mode==='modul')return base+`Alokasi waktu ${d.dur}. Susun modul ajar lengkap: Informasi Umum, Kompetensi Awal, Profil Pelajar Pancasila, Sarana Prasarana, Karakteristik Peserta Didik, Model Pembelajaran, Tujuan Pembelajaran, Pemahaman Bermakna, Pertanyaan Pemantik, Kegiatan Pembelajaran (pendahuluan, inti, penutup dengan waktu), Asesmen (rubrik sederhana), Strategi Diferensiasi dan Akomodasi sesuai ketunaan, Refleksi Guru dan Peserta Didik. ${fmt}`;
- return base+`Buat LKPD dengan ${d.jKeg} kegiatan bertahap: Identitas (nama, kelas, tanggal), Tujuan, Petunjuk (langkah pendek), Kegiatan 1-${d.jKeg} (tiap kegiatan ada ruang jawab bergaris atau tabel), Refleksi dengan pilihan ekspresi sederhana, dan Kolom Penilaian Guru. ${fmt}`;
+ if(mode==='modul')return base+`Susun MODUL AJAR Kurikulum Merdeka yang lengkap dan siap pakai. Fase ${faseDari(d.kelas)}, alokasi waktu ${d.dur}, model ${d.model||'Pembelajaran Terdiferensiasi'}, penyusun ${d.guru||'guru'}, satuan pendidikan ${$('#sek').value}.${d.tujuan?' Tujuan pembelajaran dari guru: '+d.tujuan+'.':''} Gunakan tepat tiga bagian <h3>: "A. INFORMASI UMUM" (tabel identitas modul, kompetensi awal, profil pelajar Pancasila, sarana prasarana, target peserta didik sesuai ketunaan, model pembelajaran), "B. KOMPONEN INTI" (tujuan pembelajaran, pemahaman bermakna, pertanyaan pemantik, persiapan pembelajaran, kegiatan pembelajaran per pertemuan dengan pendahuluan, inti, penutup beserta menit dan langkah konkret sesuai ketunaan, asesmen diagnostik formatif sumatif dengan rubrik dalam tabel, pengayaan dan remedial, diferensiasi dan akomodasi, program pembelajaran individual singkat, refleksi guru dan peserta didik), dan "C. LAMPIRAN" (LKPD ringkas, bahan bacaan, glosarium, daftar pustaka). Pakai tabel untuk identitas dan rubrik. Jangan menulis kop surat atau tanda tangan. ${fmt}`;
+ return base+`Buat LKPD (Lembar Kerja Peserta Didik) dengan ${d.jKeg} kegiatan bertahap dari mudah ke sulit. Susun dengan <h3>: Judul LKPD, Tujuan, Petunjuk (langkah sangat pendek, satu perintah per baris), Alat dan bahan, Kegiatan 1 sampai ${d.jKeg} (tiap kegiatan berisi instruksi singkat dan ruang jawab berupa garis titik atau tabel kosong; gunakan emoji berukuran besar sebagai gambar sederhana; variasikan jenisnya: mengamati, menghitung, mencocokkan, menulis, mengelompokkan), Refleksi (pilihan ekspresi emoji), dan Penilaian Guru (tabel skor). Jangan menulis kop surat, kolom nama, atau tanda tangan.${d.tebal?' MODE MENEBALI: bungkus setiap teks yang harus ditebali siswa dengan <span class="tb">...</span> (huruf, angka, kata, atau kalimat pendek), satu per baris.':''} ${fmt}`;
 }
 function mapelVal(){const m=$('#mapel').value;return m.startsWith('Lainnya')?$('#mapelLain').value.trim():m}
 async function kirim(u,o){
@@ -340,9 +343,9 @@ async function kirim(u,o){
 function rakitKop(d,judul,logo){
   const kopImg=$('#kopMode').value==='unggah'?logo:($('#kopMode').value==='bawaan'?(KOP[$('#sek').value]||''):'');
   const nmS=$('#sek').value.startsWith('Sekolah lain')?($('#snm').value.trim()||'NAMA SEKOLAH'):$('#sek').value;
-  const idn=mode==='soal'?`<table class="idn" style="width:62%;margin:8px auto"><tr><td style="width:34%">Nama</td><td style="width:4%">:</td><td>..............................................</td></tr><tr><td>Mata Pelajaran</td><td>:</td><td>${esc(d.mapel)}</td></tr><tr><td>Kelas</td><td>:</td><td>${esc(d.kelas)}</td></tr><tr><td>Jenjang</td><td>:</td><td>${esc(d.jenjang)}</td></tr><tr><td>Ketunaan</td><td>:</td><td>${esc(d.ktn)}</td></tr></table>`:'';
+  const idn=(mode==='soal'||mode==='lkpd')?`<table class="idn" style="width:62%;margin:8px auto"><tr><td style="width:34%">Nama</td><td style="width:4%">:</td><td>..............................................</td></tr><tr><td>Mata Pelajaran</td><td>:</td><td>${esc(d.mapel)}</td></tr><tr><td>Kelas</td><td>:</td><td>${esc(d.kelas)}</td></tr><tr><td>Jenjang</td><td>:</td><td>${esc(d.jenjang)}</td></tr><tr><td>Ketunaan</td><td>:</td><td>${esc(d.ktn)}</td></tr></table>`:'';
   const kopH=kopImg?`<div class="kop" style="border:0;padding:0"><img src="${kopImg}" alt="Kop sekolah" style="width:100%"></div>`:`<div class="kop"><b>Pemerintah Provinsi Jawa Timur</b><b>Dinas Pendidikan</b><b class="s">${esc(nmS)}</b>${esc($('#alm').value)}</div>`;
-  const kop=kopH+(mode==='soal'?`<div class="judul">${esc(judul)}</div>`:`<div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`)+idn;
+  const kop=kopH+((mode==='soal'||mode==='lkpd')?`<div class="judul">${esc(judul)}</div>`:`<div class="judul">${esc(judul)}<br>${esc(d.mapel)} - Kelas ${esc(d.kelas)} ${esc(d.jenjang)}<br>Peserta didik ${esc(d.ktn)}</div>`)+idn;
   const kopK=kopH+`<div class="judul">Kunci Jawaban<br>${esc(judul)} - ${esc(d.mapel)} - Kelas ${esc(d.kelas)}</div>`;
   return {kop,kopK};
 }
@@ -520,6 +523,60 @@ function buatMenebali(d){
  let li='';for(let i=0;i<n;i++){let h,t=0;do{h=T[pool[i%pool.length]]();t++}while(pakai.has(h)&&t<15);pakai.add(h);li+='<li>'+h+'</li>'}
  return '<h3>Petunjuk</h3><p>Tebalkan tulisan putus-putus di bawah ini dengan rapi!</p><ol>'+li+'</ol>';
 }
+function faseDari(k){const i=KLS.indexOf(k);return i<2?'A':i<4?'B':i<6?'C':i<9?'D':i<10?'E':'F'}
+/* Kerangka modul ajar bawaan (tanpa AI) */
+function buatModul(d){
+ const f=faseDari(d.kelas),np=+((d.dur||'').match(/(\d)\s*pertemuan/)||[0,1])[1]||1,akom=KETUNAAN[d.ktn]||'',tp=esc(d.topik||('materi '+d.mapel)),md=esc(d.model||'Pembelajaran Terdiferensiasi');
+ const y=new Date(),th=y.getMonth()>=6?y.getFullYear():y.getFullYear()-1,nm=$('#sek').value.startsWith('Sekolah lain')?($('#snm').value.trim()||'..........'):$('#sek').value;
+ const tb=r=>'<table>'+r.map(x=>'<tr><td style="width:32%"><b>'+x[0]+'</b></td><td>'+x[1]+'</td></tr>').join('')+'</table>',ul=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>',ol=a=>'<ol>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ol>';
+ let keg='';for(let i=1;i<=np;i++)keg+=(np>1?'<p><b>Pertemuan '+i+'</b></p>':'')+tb([['Pendahuluan (10 menit)','Berdoa, salam, dan presensi. Apersepsi dengan pertanyaan pemantik. Guru menyampaikan tujuan dan kegiatan hari ini dengan bahasa sederhana dan dukungan visual.'],['Kegiatan inti (50 menit)','Guru menyajikan '+tp+' dengan media konkret, gambar, atau demonstrasi. Peserta didik mengamati, mencoba, dan berlatih bertahap dengan pendampingan, lalu mengerjakan LKPD. Akomodasi: '+esc(akom)+'.'],['Penutup (10 menit)','Refleksi bersama, penguatan positif, tindak lanjut, dan doa.']]);
+ return '<h3>A. INFORMASI UMUM</h3>'+tb([['Penyusun',esc(d.guru||'..........')],['Satuan pendidikan',esc(nm)],['Tahun pelajaran',th+'/'+(th+1)],['Mata pelajaran',esc(d.mapel)],['Fase / Kelas','Fase '+f+' / Kelas '+esc(d.kelas)+' ('+esc(d.jenjang)+')'],['Alokasi waktu',esc(d.dur||'')],['Peserta didik',esc(d.ktn)+', kemampuan '+esc(d.kemam)],['Model pembelajaran',md]])
+ +'<p><b>Kompetensi awal</b></p><p>Peserta didik sudah mengenal dasar '+tp+' sesuai kemampuannya dan dapat mengikuti instruksi sederhana.</p>'
+ +'<p><b>Profil Pelajar Pancasila</b></p>'+ul(['Beriman, bertakwa kepada Tuhan YME, dan berakhlak mulia','Mandiri','Bergotong royong'])
+ +'<p><b>Sarana dan prasarana</b></p>'+ul(['Ruang kelas yang ramah dan tertata','Media konkret, gambar, atau video','LKPD dan alat tulis'])
+ +'<p><b>Target peserta didik</b></p><p>'+esc(d.ktn)+': '+esc(akom)+'.</p>'
+ +'<h3>B. KOMPONEN INTI</h3><p><b>Tujuan pembelajaran</b></p>'+ol(d.tujuan?[esc(d.tujuan)]:['Peserta didik mengenal '+tp+' dengan bantuan guru.','Peserta didik menyebutkan atau menunjukkan contoh '+tp+'.','Peserta didik menerapkan '+tp+' dalam kegiatan sehari-hari sesuai kemampuannya.'])
+ +'<p><b>Pemahaman bermakna</b></p><p>'+tp+' membantu peserta didik memahami dan mengerjakan hal-hal dalam kehidupan sehari-hari.</p>'
+ +'<p><b>Pertanyaan pemantik</b></p>'+ol(['Apa yang kamu ketahui tentang '+tp+'?','Di mana kamu pernah melihat atau menggunakan '+tp+'?'])
+ +'<p><b>Persiapan pembelajaran</b></p>'+ul(['Menyiapkan media dan LKPD','Menata tempat duduk sesuai kebutuhan peserta didik','Menyiapkan alat bantu sesuai ketunaan'])
+ +'<p><b>Kegiatan pembelajaran</b></p>'+keg
+ +'<p><b>Asesmen</b></p>'+tb([['Diagnostik','Tanya jawab lisan atau tunjuk gambar di awal pembelajaran'],['Formatif','Observasi saat kegiatan dan hasil LKPD'],['Sumatif','Tes sederhana, unjuk kerja, atau praktik di akhir materi']])
+ +'<table><tr><th>Aspek</th><th>Mulai berkembang</th><th>Berkembang</th><th>Cakap</th></tr><tr><td>Pemahaman</td><td>Dengan bantuan penuh</td><td>Dengan sedikit bantuan</td><td>Mandiri</td></tr><tr><td>Keterlibatan</td><td>Perlu diarahkan</td><td>Sesekali diarahkan</td><td>Aktif sendiri</td></tr><tr><td>Hasil kerja</td><td>Sebagian benar</td><td>Sebagian besar benar</td><td>Benar semua</td></tr></table>'
+ +'<p><b>Pengayaan dan remedial</b></p><p>Pengayaan: tugas lanjutan yang lebih menantang. Remedial: pengulangan dengan media konkret dan pendampingan individu.</p>'
+ +'<p><b>Diferensiasi dan akomodasi</b></p>'+ul(['Konten: materi disederhanakan sesuai kemampuan','Proses: bantuan bertahap dan media yang sesuai ('+esc(akom)+')','Produk: bentuk hasil kerja boleh lisan, menunjuk, atau menulis','Lingkungan: posisi duduk dan suasana kelas yang mendukung'])
+ +'<p><b>Refleksi guru dan peserta didik</b></p>'+ol(['Apakah tujuan pembelajaran tercapai?','Bagian mana yang perlu diperbaiki?','Peserta didik: apa yang kamu pelajari hari ini? Apa yang menyenangkan?'])
+ +'<h3>C. LAMPIRAN</h3>'+ul(['LKPD (buat lewat menu LKPD)','Bahan bacaan guru dan peserta didik: ..........','Glosarium: ..........','Daftar pustaka: ..........']);
+}
+function tampilModul(d){
+ const {kop}=rakitKop(d,'Modul Ajar',ls.get('ag_logo',''));
+ const ttd=`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
+ lastHTML=kop+'<div class="isi">'+buatModul(d)+'</div>'+ttd;lastKunci='';
+ lastMeta={judul:'Modul Ajar '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
+ tampilHasil();
+}
+/* LKPD bawaan (tanpa AI) */
+const ttdH=d=>`<table style="border:0;margin-top:30px"><tr><td style="border:0;width:50%">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b><u>${esc(d.kepsek||'..................')}</u></b></td><td style="border:0">Guru Mata Pelajaran<br><br><br><br><br><b><u>${esc(d.guru||'..................')}</u></b></td></tr></table>`;
+function buatLKPD(d){
+ const G=Object.values(EMO),r=m=>Math.floor(Math.random()*m),n=Math.max(3,Math.min(6,+d.jKeg||3)),tk=d.tebal,tp=esc(d.topik||d.mapel);
+ const gb=()=>acak(acak(G)[0]).slice(0,4),dr=(x,k)=>'<span class="emo">'+x.repeat(k)+'</span>',gr='<br>..............................................';
+ const K=[()=>{const [[e,nm]]=gb();return 'Amati gambar berikut, lalu tulis namanya!<br>'+dr(e,1)+(tk?'<br><span class="tb">'+nm+'</span>':gr)},
+  ()=>{const [[e]]=gb(),j=2+r(6);return 'Hitunglah jumlah gambar berikut!<br>'+dr(e,j)+'<br>Jumlahnya: ........ buah'},
+  ()=>{const g=gb().slice(0,3);return 'Cocokkan gambar dengan namanya! Tarik garis.<table><tr><td>'+g.map(x=>dr(x[0],1)).join('<br>')+'</td><td>'+acak(g).map(x=>x[1]).join('<br>')+'</td></tr></table>'},
+  ()=>{const w=acak(KATA)[0];return 'Tulislah kata berikut!<br>'+(tk?'<span class="tb">'+w+'</span><br>':w+'<br>')+'..............................................'},
+  ()=>{const [[e],[e2]]=gb();return 'Lingkarilah gambar yang sama dengan '+e+'!<br>'+dr(acak([e,e2,e,e2,e]).join(''),1)},
+  ()=>'Gambarlah benda yang kamu suka tentang '+tp+' di dalam kotak!<div style="height:90px;border:1px solid #000;margin:6px 0"></div>'];
+ const pool=[0,1,2,3,4,5];let kg='';
+ for(let i=0;i<n;i++)kg+='<h3>Kegiatan '+(i+1)+'</h3><p>'+K[pool[i%pool.length]]()+'</p>';
+ return '<h3>Tujuan</h3><p>Peserta didik mengerjakan kegiatan tentang '+tp+' dengan bantuan sesuai kebutuhannya.</p><h3>Petunjuk</h3><ol><li>Berdoalah sebelum bekerja.</li><li>Dengarkan penjelasan guru.</li><li>Kerjakan dengan tenang.</li><li>Bertanya jika belum paham.</li></ol>'+kg
+ +'<h3>Refleksi</h3><p>Bagaimana perasaanmu hari ini? Lingkari!<br><span class="emo">😀 🙂 😐 😟</span></p>'
+ +'<h3>Penilaian Guru</h3><table><tr><th>Aspek</th><th>1</th><th>2</th><th>3</th></tr><tr><td>Ketepatan jawaban</td><td></td><td></td><td></td></tr><tr><td>Kemandirian</td><td></td><td></td><td></td></tr><tr><td>Keterlibatan</td><td></td><td></td><td></td></tr></table>';
+}
+function tampilLKPD(d){
+ const {kop}=rakitKop(d,'Lembar Kerja Peserta Didik (LKPD)',ls.get('ag_logo',''));
+ lastHTML=kop+'<div class="isi">'+buatLKPD(d)+'</div>'+ttdH(d);lastKunci='';
+ lastMeta={judul:'LKPD '+d.mapel+' Kelas '+d.kelas,tgl:new Date().toLocaleDateString('id-ID')};
+ tampilHasil();
+}
 function tampilMenebali(d){
  const judul=d.jenis||'Ulangan Harian',{kop}=rakitKop(d,judul,ls.get('ag_logo',''));
  lastHTML=kop+'<div class="isi">'+buatMenebali(d)+'</div>';lastKunci='';
@@ -562,7 +619,7 @@ function tampilBank(d,b){
  tampilHasil();
 }
 async function generate(){
- const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
+ const d={};['mapel','kelas','jenjang','ktn','kemam','topik','jPG','jBS','jMj','jIs','jGb','jUr','jenis','kesul','dur','jKeg','kepsek','guru','model','tujuan'].forEach(k=>{const e=$('#'+k);if(e)d[k]=e.value.trim()});
  const st=$('#st');
  d.mapel=mapelVal();d.tebal=!!($('#tebal')&&$('#tebal').checked);d.web=mode==='soal';
  if(!d.mapel||!d.kelas){st.textContent='Pilih mata pelajaran dan kelas.';return}
@@ -599,7 +656,9 @@ async function generate(){
   let ok=false,info='';
   const psn=/quota|exceeded/i.test(e.message)?'Kuota gratis AI sedang habis (pulih otomatis tiap hari).':e.message;
   console.error('AI gagal:',e.message);
-  if(mode==='soal'&&d.tebal){tampilMenebali(d);ok=true;st.textContent='Berhasil. Soal menebali dibuat otomatis (font Trace).'}
+  if(mode==='modul'){tampilModul(d);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'), jadi dibuat kerangka modul ajar otomatis. Lengkapi sesuai kebutuhan.'}
+  else if(mode==='lkpd'){tampilLKPD(d);ok=true;st.textContent='AI sedang tidak bisa dipakai ('+psn+'), jadi LKPD dibuat otomatis. Sesuaikan dengan materi Anda.'}
+  else if(mode==='soal'&&d.tebal){tampilMenebali(d);ok=true;st.textContent='Berhasil. Soal menebali dibuat otomatis (font Trace).'}
   else if(mode==='soal'){try{const h=await rakitDariBank(d);
    if(h.jumlah||h.utuh){tampilBank(d,h);ok=true;st.textContent='Berhasil.'+(h.kurang&&h.kurang.length?' Stok Bank Soal kurang: '+h.kurang.join(', ')+'.':'');console.info('Soal dari Bank Soal',h.level||'')}else info=' '+(h.info||'')}catch(x){console.error(x);info=' Bank Soal tidak bisa dibaca.'}}
   if(!ok)st.textContent='Gagal.'+info;
