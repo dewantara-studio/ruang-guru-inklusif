@@ -201,6 +201,7 @@ html[data-tema=dash] .note{background:#FFF3CC;color:#10231F}
 
 <!-- MASUK / DAFTAR -->
 <section id="auth">
+ <button type="button" class="btn sm ghost" id="tTemaA" style="position:fixed;top:14px;right:14px;z-index:5"></button>
  <div class="hero">
   <div class="brand" style="font-size:1.3rem;color:var(--sun)">Ruang Guru Inklusif</div>
   <h1>Perangkat ajar untuk setiap anak, siap dalam hitungan menit.</h1>
@@ -909,11 +910,11 @@ document.addEventListener('click',e=>{
 /* ====== UKURAN HURUF ====== */
 let fs=ls.get('ag_fs',19);const setFs=n=>{fs=Math.min(26,Math.max(16,n));document.documentElement.style.fontSize=fs+'px';ls.set('ag_fs',fs)};
 setFs(fs);$('#fMin').onclick=()=>setFs(fs-2);$('#fPlus').onclick=()=>setFs(fs+2);
-let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema','dash');
+let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema2','dash');
 if(!['dash','terang','gelap'].includes(tm))tm='dash';
 const NT={dash:'Dashboard',terang:'Terang',gelap:'Gelap'},URUT=['dash','terang','gelap'];
-const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent='🎨 Tema: '+NT[tm]};
-$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=()=>{tm=URUT[(URUT.indexOf(tm)+1)%3];ls.set('ag_tema',tm);terap()};terap();
+const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent=$('#tTemaA').textContent='🎨 Tema: '+NT[tm]};
+$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=$('#tTemaA').onclick=()=>{tm=URUT[(URUT.indexOf(tm)+1)%3];ls.set('ag_tema2',tm);terap()};terap();
 initAuth();
 </script>
 </body>
