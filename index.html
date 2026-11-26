@@ -464,7 +464,7 @@ function pecahBank(b){
  blok.forEach(k=>{
   const t=rapi(k.el),tl=t.toLowerCase();
   if(/^[\s=#\-_*~.]{3,}$/.test(t)){cur=null;return}
-  if(/kunci\s+jawaban/i.test(t)&&t.length<200&&!reNo.test(t)){mKunci=true;const k0=t.match(KLSRE);if(k0)ctx.kelas=rom(k0[1]);cur=null;return}
+  if(/(kunci\s+jawaban|^kunci\b)/i.test(t)&&t.length<200&&!reNo.test(t)){mKunci=true;const sisa=t.replace(/^.*?(kunci\s+jawaban|kunci)\s*[:\-–]?\s*/i,'');if(/\d\s*[\.\):\-–=]?\s*[A-Ea-eSs]/.test(sisa))(kt[ctx.kelas+'|'+ctx.mapel]=kt[ctx.kelas+'|'+ctx.mapel]||[]).push(sisa);const k0=t.match(KLSRE);if(k0)ctx.kelas=rom(k0[1]);cur=null;return}
   if(mKunci){const lb=t.replace(/^[a-e]\s*[\.\)]\s*/i,'').match(/^(?:kunci\s+)?(pilihan ganda|pg|benar[\s-]*(?:atau\s*)?salah|isian(?: singkat)?|esai(?: singkat)?|uraian|menjodohkan)\b([^:]{0,30}:|)\s*([\s\S]*)$/i);
    if(lb){const sc=ctx.kelas+'|'+ctx.mapel;(kt[sc]=kt[sc]||[]).push(lb[1]+': '+lb[3]);return}}
   if(k.opsi){if(cur)cur.parts.push(k.el);return}
@@ -496,7 +496,12 @@ function pecahBank(b){
   });
  });
  const km={},dup={},cnt={};
- if(b.kunci)teks(b.kunci).replace(/(\d{1,3})\s*[\.\):\-–]?\s*([A-Ea-eSs])(?![A-Za-z])/g,(m,n,h)=>{n=+n;if(n in km)dup[n]=1;km[n]=h.toUpperCase();return m});
+ if(b.kunci){const kt0=teks(b.kunci);let ada=0;
+  kt0.replace(/(\d{1,3})\s*[\.\):\-–—=→]*\s*([A-Ea-eSs])(?![A-Za-z])/g,(m,n,h)=>{n=+n;ada++;if(n in km)dup[n]=1;km[n]=h.toUpperCase();return m});
+  if(!ada){
+   if(/^[A-Ea-eSs\s,;.\-–]+$/.test(kt0))kt0.replace(/[^A-Ea-eSs]/g,'').split('').forEach((h,x)=>{km[x+1]=h.toUpperCase()});
+   else{const d3=new DOMParser().parseFromString('<body>'+b.kunci+'</body>','text/html'),lis=[...d3.querySelectorAll('li')].map(x=>x.textContent.trim());if(lis.length>=2&&lis.every(x=>/^[A-Ea-eSs](?![A-Za-z])/.test(x)))lis.forEach((x,y)=>{km[y+1]=x[0].toUpperCase()})}
+  }}
  out.forEach(i=>{cnt[i.no]=(cnt[i.no]||0)+1});
  out.forEach(it=>{
   const els=it.parts;
@@ -518,7 +523,8 @@ function pecahBank(b){
   const bt=rapi(stem?(()=>{const d2=dok.createElement('div');d2.innerHTML=stem;return d2})():els[0]);
   it.yatim=!it.gb&&!/["“”]/.test(bt)&&bt.length<260&&/(teks|bacaan|wacana|paragraf|gambar|tabel|grafik|puisi|cerita|dongeng|berita|denah|peta|diagram)[^.?!"“]{0,30}(di atas|tersebut|berikut ini|di bawah)|berdasarkan\s+(teks|bacaan|gambar|tabel|grafik|diagram|cerita|puisi)|(bacalah|perhatikan)\s+(teks|gambar|tabel|grafik|puisi|bacaan)/i.test(bt);
   const kb=((ktm[it.kelas+'|'+it.mapel]||{})[it.tipe]||{})[it.no];
-  it.kunci=kb||((it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&cnt[it.no]===1?km[it.no]:'');
+  it.kunci=kb||((it.tipe==='PG'||it.tipe==='BS')&&km[it.no]&&!dup[it.no]&&out.filter(o=>o.no===it.no&&(!o.tipe||o.tipe===it.tipe)).length===1?km[it.no]:'');
+  if(!it.kunci&&b.kunciAI){const v=b.kunciAI[(it.kelas||'')+'|'+it.tipe+it.no];if(v)it.kunci=v}
  });
  if(out.length<2)return [{utuh:true,judul:b.judul,ktn:b.ketunaan||'',kelas:'',kelasDoc,mapel:b.mapel||'',tipe:'UT',no:0,teks:teks(b.html||''),raw:b.html||'',kunciUtuh:b.kunci||''}];
  return out;
@@ -761,8 +767,24 @@ const teks=h=>{const e=document.createElement('div');e.innerHTML=h;return (e.tex
 const store={
  async list(k){if(db){return (await db.collection(k).get()).docs.map(d=>({...d.data(),id:d.id}))}return ls.get('ag_'+k,[])},
  async add(k,o){o.id=String(Date.now());o.dibuat=Date.now();if(db)await db.collection(k).doc(o.id).set(o);else{const a=ls.get('ag_'+k,[]);a.unshift(o);ls.set('ag_'+k,a)}return o},
+ async upd(k,id,o){if(db)await db.collection(k).doc(id).update(o);else{const a=ls.get('ag_'+k,[]),t=a.find(x=>x.id===id);if(t)Object.assign(t,o);ls.set('ag_'+k,a)}},
  async del(k,id){if(db)await db.collection(k).doc(id).delete();else ls.set('ag_'+k,ls.get('ag_'+k,[]).filter(x=>x.id!==id))}
 };
+const ringkasSoal=x=>{try{const it=pecahBank(x).filter(i=>!i.utuh);if(!it.length)return 'soal tidak terbaca per butir';return it.length+' soal, '+it.filter(i=>i.kunci).length+' berkunci'}catch(e){return ''}};
+async function aiTeks(pt){
+ const key=ls.get('ag_key',''),u=!key&&AI_PROXY_URL?AI_PROXY_URL:'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key='+encodeURIComponent(key);
+ const r=await kirim(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:pt}]}]})}),j=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(j.error?.message||'AI menolak permintaan');
+ return (j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+}
+async function lengkapiKunci(b){
+ const it=pecahBank(b).filter(x=>!x.utuh&&!x.kunci);
+ if(!it.length)return null;
+ const t=await aiTeks('Tentukan kunci jawaban yang benar untuk soal-soal berikut. Keluarkan HANYA JSON tanpa markdown berbentuk {"0":"A","1":"B","2":"jawaban singkat"}. Kuncinya memakai nomor urut dalam kurung siku. PG: satu huruf A-E. BS (benar-salah): B atau S. UR dan IS: jawaban singkat satu kalimat.\n'+it.map((x,i)=>'['+i+'] '+x.tipe+': '+x.teks.slice(0,500)).join('\n'));
+ const o=JSON.parse((t.match(/\{[\s\S]*\}/)||['{}'])[0]),ai={...(b.kunciAI||{})};let n=0;
+ it.forEach((x,i)=>{const v=o[i];if(v&&String(v).trim()){ai[(x.kelas||'')+'|'+x.tipe+x.no]=String(v).trim().slice(0,300);n++}});
+ return {ai,n};
+}
 async function bank(v){
  v.innerHTML='<div class="card"><p><span class="load"></span>Memuat bank soal...</p></div>';
  let L=[];try{L=(await store.list('bank')).filter(x=>x.mode!=='modul'&&x.mode!=='lkpd')}catch(e){v.innerHTML='<div class="card"><p class="err">Gagal memuat. Periksa aturan Firestore (lihat README).</p></div>';return}
@@ -780,7 +802,7 @@ async function bank(v){
  <label for="bf">Atau unggah file teks (.txt)</label><input id="bf" type="file" accept=".txt">
  <button class="btn teal" id="bs" style="margin-top:1rem">Simpan ke Bank Soal</button><p class="status" id="bst" role="status"></p></details>`:''}<label for="cari">Cari mata pelajaran, kelas, atau ketunaan</label><input id="cari"><ul id="dg"></ul></div><div class="stage hide" id="stage" style="margin-top:1.5rem"></div>`;
  const tampil=()=>{const q=$('#cari').value.toLowerCase();const f=L.filter(x=>[x.judul,x.mapel,x.kelas,x.ketunaan,x.oleh].join(' ').toLowerCase().includes(q));
-  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · kelas ${esc(ringkasKelas(x.kelas))} · oleh ${esc(x.oleh||'-')}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
+  $('#dg').innerHTML=f.length?f.map(x=>`<li><span><b>${esc(x.judul)}</b><br>${esc(x.ketunaan||'')} · kelas ${esc(ringkasKelas(x.kelas))} · oleh ${esc(x.oleh||'-')} · ${ringkasSoal(x)}</span><span><button class="btn sm" data-a="buka" data-i="${x.id}">Buka</button> <button class="btn sm ghost" data-a="simpan" data-i="${x.id}">Simpan ke arsip</button>${user.admin?` <button class="btn sm ghost" data-a="kunci" data-i="${x.id}">Lengkapi kunci (AI)</button>`:''}${(user.admin||x.un===user.username)?` <button class="btn sm ghost" data-a="hapus" data-i="${x.id}">Hapus</button>`:''}</span></li>`).join(''):'<li>Belum ada. Bagikan hasil dari menu Soal Ujian dengan tombol Bagikan ke Bank Soal.</li>'};
  tampil();$('#cari').oninput=tampil;
  if(user.admin){
   $('#bp').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const p=b.dataset.p,r=p==='x'?null:p.split('-').map(Number);document.querySelectorAll('.bk').forEach((c,i)=>{c.checked=r?(i>=r[0]&&i<=r[1]):false})};
@@ -798,6 +820,7 @@ async function bank(v){
   if(b.dataset.a==='buka'){lastMeta={judul:x.judul};const s=$('#stage');s.classList.remove('hide');s.innerHTML=`<div class="actions no-print"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn ghost" onclick="unduh()">Unduh .doc</button></div><div class="paper" id="paper">${x.html}</div>`;s.scrollIntoView()}
   else if(b.dataset.a==='simpan'){const it={id:Date.now(),judul:x.judul,tgl:new Date().toLocaleDateString('id-ID'),html:x.html};const a=ls.get('ag_arsip',[]);a.unshift(it);ls.set('ag_arsip',a.slice(0,30));
    if(db){try{await db.collection('guru').doc(user.username).collection('arsip').doc(String(it.id)).set(it)}catch(x2){}}b.textContent='Tersimpan'}
+  else if(b.dataset.a==='kunci'){b.disabled=true;b.textContent='Memproses...';try{const r=await lengkapiKunci(x);if(!r)b.textContent='Kunci sudah lengkap';else{await store.upd('bank',x.id,{kunciAI:r.ai});x.kunciAI=r.ai;b.textContent=r.n+' kunci ditambahkan'}}catch(e2){b.textContent='Gagal: '+(/quota|exceeded/i.test(e2.message)?'kuota AI habis':'coba lagi')}b.disabled=false}
   else if(confirm('Hapus dari bank soal?')){try{await store.del('bank',x.id)}catch(x2){}bank(v)}};
 }
 async function gudang(v){
