@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-tema="dash">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -159,6 +159,41 @@ html[data-tema=gelap] #salam{color:#8DEBDD}
  nav{border-radius:0 0 28px 28px}nav button.nv:hover{transform:none}
  .top{padding:.8rem 1rem}
 }
+}
+
+/* ===== TEMA DASHBOARD (biru malam, cyan, oranye) ===== */
+@media screen{
+html[data-tema=dash]{--bg:#050B1F;--ink:#DDF3FF;--card:#0A1A3E;--fld:#0D2250;--onink:#04101F;--nav:#040A1A;--stagebg:#081433;--bd:rgba(25,211,255,.38);--teal:#0B8FD6;--teal2:#19D3FF;--sun:#FFAB0F;--plum:#FF5C9A;--err:#FF8A8A;--sh:0 0 0 1px rgba(25,211,255,.22),0 0 24px rgba(25,211,255,.16);color-scheme:dark}
+html[data-tema=dash] body{background:radial-gradient(900px 520px at 12% -10%,rgba(25,150,255,.28),transparent 60%),radial-gradient(800px 520px at 100% 100%,rgba(255,171,15,.10),transparent 55%),linear-gradient(rgba(25,211,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(25,211,255,.045) 1px,transparent 1px),linear-gradient(#050B1F,#071032);background-size:auto,auto,42px 42px,42px 42px,auto;background-attachment:fixed}
+html[data-tema=dash] .card,html[data-tema=dash] .box{background:linear-gradient(180deg,rgba(14,42,96,.88),rgba(8,22,58,.94));border:1px solid rgba(25,211,255,.4);box-shadow:var(--sh);position:relative}
+html[data-tema=dash] .card::before,html[data-tema=dash] .card::after{content:'';position:absolute;width:18px;height:18px;border:2px solid #19D3FF;pointer-events:none;filter:drop-shadow(0 0 5px #19D3FF)}
+html[data-tema=dash] .card::before{left:9px;top:9px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+html[data-tema=dash] .card::after{right:9px;bottom:9px;border-left:0;border-top:0;border-radius:0 0 6px 0}
+html[data-tema=dash] .grid>.card:first-child{border-top:1px solid rgba(25,211,255,.4)}
+html[data-tema=dash] .card h3,html[data-tema=dash] .top h2{color:#19D3FF;text-shadow:0 0 12px rgba(25,211,255,.55)}
+html[data-tema=dash] label{color:#BFE8FF}
+html[data-tema=dash] .top{background:linear-gradient(90deg,rgba(14,42,96,.9),rgba(8,22,58,.9));border:1px solid rgba(25,211,255,.4);box-shadow:var(--sh)}
+html[data-tema=dash] #salam{background:rgba(255,171,15,.14);color:#FFB82E;border:1px solid rgba(255,171,15,.45)}
+html[data-tema=dash] nav{background:linear-gradient(190deg,#071235,#040A1A);border-right:1px solid rgba(25,211,255,.35);box-shadow:6px 0 30px rgba(0,0,0,.5)}
+html[data-tema=dash] nav .brand{color:#19D3FF;text-shadow:0 0 14px rgba(25,211,255,.6)}
+html[data-tema=dash] nav .em{background:rgba(25,211,255,.12);border:1px solid rgba(25,211,255,.3)}
+html[data-tema=dash] nav button.nv[aria-current=true]{background:linear-gradient(135deg,#19D3FF,#0B8FD6);color:#04101F;box-shadow:0 0 20px rgba(25,211,255,.55)}
+html[data-tema=dash] .btn{background:linear-gradient(135deg,#FFC24A,#FF9F0A);color:#1A1000;box-shadow:0 0 16px rgba(255,171,15,.35)}
+html[data-tema=dash] .btn.teal,html[data-tema=dash] .btn[aria-pressed=true]{background:linear-gradient(135deg,#0B8FD6,#19D3FF);color:#04101F;box-shadow:0 0 18px rgba(25,211,255,.45)}
+html[data-tema=dash] .btn.ghost{background:rgba(13,34,80,.9);color:#DDF3FF;border:1px solid rgba(25,211,255,.45);box-shadow:none}
+html[data-tema=dash] .tampil{background:rgba(25,211,255,.07);border:1px solid rgba(25,211,255,.25)}
+html[data-tema=dash] .tampil .btn.ghost{background:rgba(25,211,255,.1);border-color:rgba(25,211,255,.4)}
+html[data-tema=dash] .tampil .btn[aria-pressed=true]{background:#FFAB0F;color:#1A1000}
+html[data-tema=dash] input,html[data-tema=dash] select,html[data-tema=dash] textarea{background:#0D2250;border:1.5px solid rgba(25,211,255,.4);color:#DDF3FF}
+html[data-tema=dash] input:focus,html[data-tema=dash] select:focus,html[data-tema=dash] textarea:focus{border-color:#19D3FF;box-shadow:0 0 0 4px rgba(25,211,255,.25),0 0 18px rgba(25,211,255,.3)}
+html[data-tema=dash] .hero{background:linear-gradient(150deg,#06204A 0%,#0A4A8F 55%,#0B8FD6 100%)}
+html[data-tema=dash] .tabs{background:rgba(25,211,255,.08);border:1px solid rgba(25,211,255,.3)}
+html[data-tema=dash] .tabs button[aria-selected=true]{background:linear-gradient(135deg,#0B8FD6,#19D3FF);color:#04101F;box-shadow:0 0 16px rgba(25,211,255,.5)}
+html[data-tema=dash] .stage{background:rgba(6,16,44,.75);border:2px dashed rgba(25,211,255,.4)}
+html[data-tema=dash] .empty{color:#8FD9FF}
+html[data-tema=dash] .arsip li{border-bottom:1px solid rgba(25,211,255,.2)}
+html[data-tema=dash] .status{color:#8DF0B0}
+html[data-tema=dash] .note{background:#FFF3CC;color:#10231F}
 }
 </style>
 </head>
@@ -874,9 +909,11 @@ document.addEventListener('click',e=>{
 /* ====== UKURAN HURUF ====== */
 let fs=ls.get('ag_fs',19);const setFs=n=>{fs=Math.min(26,Math.max(16,n));document.documentElement.style.fontSize=fs+'px';ls.set('ag_fs',fs)};
 setFs(fs);$('#fMin').onclick=()=>setFs(fs-2);$('#fPlus').onclick=()=>setFs(fs+2);
-let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema','terang');
-const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent=tm==='gelap'?'☀️ Mode Terang':'🌙 Mode Gelap'};
-$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=()=>{tm=tm==='gelap'?'terang':'gelap';ls.set('ag_tema',tm);terap()};terap();
+let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema','dash');
+if(!['dash','terang','gelap'].includes(tm))tm='dash';
+const NT={dash:'Dashboard',terang:'Terang',gelap:'Gelap'},URUT=['dash','terang','gelap'];
+const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent='🎨 Tema: '+NT[tm]};
+$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=()=>{tm=URUT[(URUT.indexOf(tm)+1)%3];ls.set('ag_tema',tm);terap()};terap();
 initAuth();
 </script>
 </body>
