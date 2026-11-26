@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-tema="dash">
+<html lang="id" data-tema="gelap">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -98,102 +98,75 @@ main{padding:1.5rem 2rem 4rem;max-width:1200px}
  .pb{border:0;margin:0;padding:0}
 }
 
-/* ===== TAMPILAN LEMBUT (hanya layar, tidak memengaruhi cetak) ===== */
+/* ===== TAMPILAN DASHBOARD (mode Gelap dan Terang) ===== */
 @media screen{
-:root{--bg:#EEF6F3;--ink:#12302B;--teal:#0F7C7C;--teal2:#14A38F;--sun:#FFC83D;--plum:#7B3FA0;--card:#fff;--fld:#fff;--nav:#0E4F52;--stagebg:#E3EEEA;--bd:rgba(18,48,43,.16);--line:1.5px solid var(--bd);--sh:0 14px 34px rgba(18,48,43,.10),0 2px 6px rgba(18,48,43,.06)}
-html[data-tema=gelap]{--bg:#0E1A18;--ink:#E9F3F0;--card:#152825;--fld:#1B3430;--nav:#081614;--stagebg:#102220;--bd:rgba(233,243,240,.2);--sh:0 14px 34px rgba(0,0,0,.45);--teal:#16938C;--teal2:#1FB9A6}
-body{background:radial-gradient(1100px 560px at 8% -8%,rgba(20,163,143,.20),transparent 60%),radial-gradient(900px 500px at 100% 0,rgba(123,63,160,.13),transparent 55%),var(--bg);background-attachment:fixed}
+:root,html[data-tema=gelap]{--bg:#050B1F;--ink:#DDF3FF;--card:#0A1A3E;--fld:#0D2250;--onink:#04101F;--nav:#040A1A;--stagebg:#081433;--bd:rgba(25,211,255,.38);--teal:#0B8FD6;--teal2:#19D3FF;--sun:#FFAB0F;--plum:#FF5C9A;--err:#FF8A8A;--glow:rgba(25,211,255,.5);--panel:linear-gradient(180deg,rgba(14,42,96,.88),rgba(8,22,58,.94));--judul:#19D3FF;--label:#BFE8FF;--navbg:linear-gradient(190deg,#071235,#040A1A);--btnA:linear-gradient(135deg,#FFC24A,#FF9F0A);--btnAi:#1A1000;--btnB:linear-gradient(135deg,#0B8FD6,#19D3FF);--btnBi:#04101F;--salam:#FFB82E;--grid:rgba(25,211,255,.045);--sh:0 0 0 1px rgba(25,211,255,.22),0 0 24px rgba(25,211,255,.16);--line:1.5px solid var(--bd);color-scheme:dark}
+html[data-tema=terang]{--bg:#EAF2FF;--ink:#0B2447;--card:#fff;--fld:#F3F8FF;--onink:#fff;--nav:#08204A;--stagebg:#DCE9FB;--bd:rgba(11,127,196,.38);--teal:#0B7FC4;--teal2:#14B5E8;--sun:#FF9F0A;--plum:#C2185B;--err:#B3261E;--glow:rgba(20,181,232,.28);--panel:linear-gradient(180deg,#fff,#F3F8FF);--judul:#0A4FA0;--label:#17407A;--navbg:linear-gradient(190deg,#0A2A5E,#08204A);--btnA:linear-gradient(135deg,#FFB02E,#FF8F00);--btnAi:#2A1600;--btnB:linear-gradient(135deg,#0B7FC4,#14B5E8);--btnBi:#fff;--salam:#B45A00;--grid:rgba(11,127,196,.07);--sh:0 8px 24px rgba(11,70,140,.14);color-scheme:light}
+body{background:radial-gradient(900px 520px at 12% -10%,var(--glow),transparent 60%),radial-gradient(800px 520px at 100% 100%,rgba(255,171,15,.12),transparent 55%),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),var(--bg);background-size:auto,auto,42px 42px,42px 42px,auto;background-attachment:fixed}
 :focus-visible{outline:3px solid var(--plum);outline-offset:2px}
-.btn{border:0;border-radius:16px;background:linear-gradient(135deg,#FFD65C,#FFB62E);box-shadow:0 6px 14px rgba(255,182,46,.35);transition:transform .15s,box-shadow .15s,filter .15s}
-.btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
-.btn:active{transform:translateY(1px);box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.btn.teal{background:linear-gradient(135deg,var(--teal),var(--teal2));box-shadow:0 8px 18px rgba(15,124,124,.35)}
-.btn.ghost{background:var(--fld);border:var(--line);box-shadow:0 2px 6px rgba(0,0,0,.06)}
-.btn[aria-pressed=true]{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff}
-input,select,textarea{border:1.5px solid var(--bd);border-radius:14px;transition:border-color .15s,box-shadow .15s}
-input:focus,select:focus,textarea:focus{outline:0;border-color:var(--teal2);box-shadow:0 0 0 4px rgba(20,163,143,.25)}
-.card,.box{border:1px solid var(--bd);border-radius:26px}
-.grid>.card:first-child{border-top:5px solid var(--teal2)}
-.card h3{font-size:1.3rem}
-.note{border:1.5px dashed rgba(0,0,0,.25);border-radius:14px}
-/* masuk dan daftar */
-.hero{background:linear-gradient(150deg,#0F7C7C 0%,#14A38F 55%,#35C4A3 100%);border-right:0;border-radius:0 56px 56px 0;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;width:440px;height:440px;border-radius:50%;background:rgba(255,255,255,.10);right:-150px;top:-130px}
-.hero::after{content:'📚 🧩 ✏️ 🌈';position:absolute;bottom:30px;left:56px;font-size:2.2rem;letter-spacing:.4em;opacity:.95}
-.hero>*{position:relative;z-index:1}
-.hero h1{text-shadow:0 2px 12px rgba(0,0,0,.18)}
-.chips span{border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.2);color:#fff}
-.box{padding:2.2rem;border-radius:30px}
-.tabs{border:0;background:var(--stagebg);padding:5px;border-radius:18px;gap:4px}
-.tabs button{border-radius:14px;background:transparent;transition:background .2s}
-.tabs button[aria-selected=true]{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;box-shadow:0 6px 14px rgba(15,124,124,.3)}
+.card,.box{background:var(--panel);border:1px solid var(--bd);border-radius:22px;box-shadow:var(--sh);position:relative}
+.card::before,.card::after{content:'';position:absolute;width:18px;height:18px;border:2px solid var(--teal2);pointer-events:none}
+.card::before{left:9px;top:9px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+.card::after{right:9px;bottom:9px;border-left:0;border-top:0;border-radius:0 0 6px 0}
+.grid>.card:first-child{border-top:1px solid var(--bd)}
+.card h3,.top h2{color:var(--judul);text-shadow:0 0 12px var(--glow)}
+label{color:var(--label)}
+.btn{border:0;border-radius:16px;background:var(--btnA);color:var(--btnAi);box-shadow:0 6px 16px rgba(255,159,10,.35);transition:transform .15s,filter .15s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn:active{transform:translateY(1px)}
+.btn.teal,.btn[aria-pressed=true]{background:var(--btnB);color:var(--btnBi);box-shadow:0 8px 18px var(--glow)}
+.btn.ghost{background:var(--fld);color:var(--ink);border:1px solid var(--bd);box-shadow:none}
+input,select,textarea{background:var(--fld);color:var(--ink);border:1.5px solid var(--bd);border-radius:14px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--teal2);box-shadow:0 0 0 4px var(--glow)}
+.note{border:1.5px dashed rgba(0,0,0,.25);border-radius:14px;background:#FFF3CC;color:#10231F}
 /* menu samping */
-nav{background:linear-gradient(190deg,#0F6B6B 0%,#0E4F52 45%,#16333B 100%);box-shadow:6px 0 30px rgba(0,0,0,.15)}
-html[data-tema=gelap] nav{background:linear-gradient(190deg,#0C2D2D,#081614)}
-nav .brand{color:#fff;font-size:1.35rem}
+nav{background:var(--navbg);border-right:1px solid var(--bd);box-shadow:6px 0 30px rgba(0,0,0,.25)}
+nav .brand{color:#19D3FF;font-size:1.35rem;text-shadow:0 0 14px rgba(25,211,255,.6)}
 nav .brand::before{content:'🎓 '}
 nav button.nv{border:0;border-radius:16px;transition:background .15s,transform .15s}
-nav button.nv:hover{background:rgba(255,255,255,.13);transform:translateX(3px)}
-nav button.nv[aria-current=true]{background:linear-gradient(135deg,#FFD65C,#FFB62E);color:#10231F;box-shadow:0 8px 18px rgba(0,0,0,.25);transform:none}
-nav .em{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.14);font-size:1.25rem}
-nav button.nv[aria-current=true] .em{background:rgba(255,255,255,.6)}
-.tampil{background:rgba(255,255,255,.08);padding:.7rem;border-radius:18px}
-.tampil .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);box-shadow:none}
-.tampil .btn[aria-pressed=true]{background:var(--sun);color:#10231F;border-color:transparent}
+nav button.nv:hover{background:rgba(255,255,255,.12);transform:translateX(3px)}
+nav button.nv[aria-current=true]{background:linear-gradient(135deg,#19D3FF,#0B8FD6);color:#04101F;box-shadow:0 0 20px rgba(25,211,255,.55);transform:none}
+nav .em{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:rgba(25,211,255,.12);border:1px solid rgba(25,211,255,.3);font-size:1.25rem}
+.tampil{background:rgba(25,211,255,.07);border:1px solid rgba(25,211,255,.25);padding:.7rem;border-radius:18px}
+.tampil .btn.ghost{background:rgba(25,211,255,.1);color:#DDF3FF;border:1px solid rgba(25,211,255,.4)}
+.tampil .btn[aria-pressed=true]{background:#FFAB0F;color:#1A1000;border-color:transparent;box-shadow:none}
 /* isi */
 main{max-width:1280px}
-.top{background:var(--card);border:1px solid var(--bd);border-radius:24px;padding:.9rem 1.4rem;box-shadow:var(--sh)}
+.top{background:var(--panel);border:1px solid var(--bd);border-radius:22px;padding:.9rem 1.4rem;box-shadow:var(--sh)}
 .top h2{font-size:1.7rem}
-#salam{background:rgba(20,163,143,.16);color:var(--teal);padding:.35rem .95rem;border-radius:99px;font-weight:700}
+#salam{background:rgba(255,171,15,.14);color:var(--salam);padding:.35rem .95rem;border-radius:99px;font-weight:700;border:1px solid rgba(255,171,15,.45)}
 #salam::before{content:'👋 '}
-html[data-tema=gelap] #salam{color:#8DEBDD}
-.stage{border:2px dashed var(--bd);border-radius:26px;background:var(--stagebg)}
+.stage{background:var(--stagebg);border:2px dashed var(--bd);border-radius:24px}
 .empty::before{content:'✨';display:block;font-size:3rem;margin-bottom:.4rem}
-.paper{border-radius:6px;box-shadow:0 14px 34px rgba(0,0,0,.2)}
+.paper{border-radius:6px;box-shadow:0 14px 34px rgba(0,0,0,.25)}
 .arsip li{border-bottom:1px solid var(--bd)}
 #view>*{animation:naik .35s ease both}
 @keyframes naik{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){#view>*{animation:none}.btn,nav button.nv{transition:none}}
-@media(max-width:860px){
- .hero{border-radius:0 0 40px 40px;padding:2.2rem 1.5rem 4.5rem}.hero::after{left:1.5rem;bottom:18px;font-size:1.8rem}
- nav{border-radius:0 0 28px 28px}nav button.nv:hover{transform:none}
- .top{padding:.8rem 1rem}
-}
-}
-
-/* ===== TEMA DASHBOARD (biru malam, cyan, oranye) ===== */
-@media screen{
-html[data-tema=dash]{--bg:#050B1F;--ink:#DDF3FF;--card:#0A1A3E;--fld:#0D2250;--onink:#04101F;--nav:#040A1A;--stagebg:#081433;--bd:rgba(25,211,255,.38);--teal:#0B8FD6;--teal2:#19D3FF;--sun:#FFAB0F;--plum:#FF5C9A;--err:#FF8A8A;--sh:0 0 0 1px rgba(25,211,255,.22),0 0 24px rgba(25,211,255,.16);color-scheme:dark}
-html[data-tema=dash] body{background:radial-gradient(900px 520px at 12% -10%,rgba(25,150,255,.28),transparent 60%),radial-gradient(800px 520px at 100% 100%,rgba(255,171,15,.10),transparent 55%),linear-gradient(rgba(25,211,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(25,211,255,.045) 1px,transparent 1px),linear-gradient(#050B1F,#071032);background-size:auto,auto,42px 42px,42px 42px,auto;background-attachment:fixed}
-html[data-tema=dash] .card,html[data-tema=dash] .box{background:linear-gradient(180deg,rgba(14,42,96,.88),rgba(8,22,58,.94));border:1px solid rgba(25,211,255,.4);box-shadow:var(--sh);position:relative}
-html[data-tema=dash] .card::before,html[data-tema=dash] .card::after{content:'';position:absolute;width:18px;height:18px;border:2px solid #19D3FF;pointer-events:none;filter:drop-shadow(0 0 5px #19D3FF)}
-html[data-tema=dash] .card::before{left:9px;top:9px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
-html[data-tema=dash] .card::after{right:9px;bottom:9px;border-left:0;border-top:0;border-radius:0 0 6px 0}
-html[data-tema=dash] .grid>.card:first-child{border-top:1px solid rgba(25,211,255,.4)}
-html[data-tema=dash] .card h3,html[data-tema=dash] .top h2{color:#19D3FF;text-shadow:0 0 12px rgba(25,211,255,.55)}
-html[data-tema=dash] label{color:#BFE8FF}
-html[data-tema=dash] .top{background:linear-gradient(90deg,rgba(14,42,96,.9),rgba(8,22,58,.9));border:1px solid rgba(25,211,255,.4);box-shadow:var(--sh)}
-html[data-tema=dash] #salam{background:rgba(255,171,15,.14);color:#FFB82E;border:1px solid rgba(255,171,15,.45)}
-html[data-tema=dash] nav{background:linear-gradient(190deg,#071235,#040A1A);border-right:1px solid rgba(25,211,255,.35);box-shadow:6px 0 30px rgba(0,0,0,.5)}
-html[data-tema=dash] nav .brand{color:#19D3FF;text-shadow:0 0 14px rgba(25,211,255,.6)}
-html[data-tema=dash] nav .em{background:rgba(25,211,255,.12);border:1px solid rgba(25,211,255,.3)}
-html[data-tema=dash] nav button.nv[aria-current=true]{background:linear-gradient(135deg,#19D3FF,#0B8FD6);color:#04101F;box-shadow:0 0 20px rgba(25,211,255,.55)}
-html[data-tema=dash] .btn{background:linear-gradient(135deg,#FFC24A,#FF9F0A);color:#1A1000;box-shadow:0 0 16px rgba(255,171,15,.35)}
-html[data-tema=dash] .btn.teal,html[data-tema=dash] .btn[aria-pressed=true]{background:linear-gradient(135deg,#0B8FD6,#19D3FF);color:#04101F;box-shadow:0 0 18px rgba(25,211,255,.45)}
-html[data-tema=dash] .btn.ghost{background:rgba(13,34,80,.9);color:#DDF3FF;border:1px solid rgba(25,211,255,.45);box-shadow:none}
-html[data-tema=dash] .tampil{background:rgba(25,211,255,.07);border:1px solid rgba(25,211,255,.25)}
-html[data-tema=dash] .tampil .btn.ghost{background:rgba(25,211,255,.1);border-color:rgba(25,211,255,.4)}
-html[data-tema=dash] .tampil .btn[aria-pressed=true]{background:#FFAB0F;color:#1A1000}
-html[data-tema=dash] input,html[data-tema=dash] select,html[data-tema=dash] textarea{background:#0D2250;border:1.5px solid rgba(25,211,255,.4);color:#DDF3FF}
-html[data-tema=dash] input:focus,html[data-tema=dash] select:focus,html[data-tema=dash] textarea:focus{border-color:#19D3FF;box-shadow:0 0 0 4px rgba(25,211,255,.25),0 0 18px rgba(25,211,255,.3)}
-html[data-tema=dash] .hero{background:linear-gradient(150deg,#06204A 0%,#0A4A8F 55%,#0B8FD6 100%)}
-html[data-tema=dash] .tabs{background:rgba(25,211,255,.08);border:1px solid rgba(25,211,255,.3)}
-html[data-tema=dash] .tabs button[aria-selected=true]{background:linear-gradient(135deg,#0B8FD6,#19D3FF);color:#04101F;box-shadow:0 0 16px rgba(25,211,255,.5)}
-html[data-tema=dash] .stage{background:rgba(6,16,44,.75);border:2px dashed rgba(25,211,255,.4)}
-html[data-tema=dash] .empty{color:#8FD9FF}
-html[data-tema=dash] .arsip li{border-bottom:1px solid rgba(25,211,255,.2)}
-html[data-tema=dash] .status{color:#8DF0B0}
-html[data-tema=dash] .note{background:#FFF3CC;color:#10231F}
+@media(max-width:860px){nav{border-radius:0 0 26px 26px}nav button.nv:hover{transform:none}.top{padding:.8rem 1rem}}
+/* halaman masuk */
+#auth{position:fixed;inset:0;z-index:20;display:grid;grid-template-columns:1fr;place-items:center;overflow:auto;padding:1rem;background:#0B1030}
+#auth .scene{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.k1{stop-color:#1B1470}.k2{stop-color:#4B2BB5}.k3{stop-color:#9B3FC9}.k4{stop-color:#E2579F}
+.mt{fill:#2A1F5A}.sn{fill:#E9DFFF}.hl{fill:#160E40}.tr{fill:#0A0620}
+html[data-tema=terang] .k1{stop-color:#5E6EF5}html[data-tema=terang] .k2{stop-color:#9A85FF}html[data-tema=terang] .k3{stop-color:#E093F0}html[data-tema=terang] .k4{stop-color:#FFC2D9}
+html[data-tema=terang] .mt{fill:#6652B3}html[data-tema=terang] .hl{fill:#3A2A82}html[data-tema=terang] .tr{fill:#241A66}
+.loginwrap{position:relative;z-index:2;display:grid;gap:1rem;justify-items:center;width:100%}
+.logobrand{color:#fff;font-weight:800;font-size:1.35rem;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+.tagline{margin:0;color:#F0E6FF;text-shadow:0 2px 8px rgba(0,0,0,.5);text-align:center}
+#auth .box{width:min(94vw,410px);background:rgba(18,12,48,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:22px;padding:1.8rem 2.1rem;box-shadow:0 24px 60px rgba(0,0,0,.45);color:#fff;max-width:none}
+#auth .box h1{text-align:center;font-size:1.8rem;letter-spacing:.08em;color:#fff;padding-bottom:.7rem;border-bottom:3px solid #7B2FF7;margin:0 0 .6rem}
+#auth label{color:#8FB6FF;font-size:.85rem;margin:.9rem 0 0}
+#auth input{background:transparent;border:0;border-bottom:2px solid #7B2FF7;border-radius:0;color:#fff;padding:.4rem 0;min-height:46px;font-size:1.05rem}
+#auth input:focus{box-shadow:0 8px 12px -10px #C3A2FF;border-bottom-color:#C3A2FF}
+#auth input:-webkit-autofill{-webkit-text-fill-color:#fff;transition:background-color 9999s}
+#auth .hint{font-size:.82rem;margin:.3rem 0 0;color:#D9CCFF}
+#auth .btn.teal{background:linear-gradient(135deg,#7B2FF7,#9F5BFF);color:#fff;border-radius:99px;width:100%;margin-top:1rem;box-shadow:0 10px 24px rgba(123,47,247,.5)}
+#auth .alt{margin:.9rem 0 0;font-size:.98rem;color:#E9E1FF}
+#auth .alt a{color:#fff;text-decoration:underline;font-weight:700}
+#auth .err{color:#FFB3B3}
+#auth #tTemaA{position:fixed;top:14px;right:14px;z-index:5;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(6px);box-shadow:none}
+@media(max-width:480px){#auth .box{padding:1.5rem 1.4rem}}
 }
 </style>
 </head>
@@ -201,29 +174,40 @@ html[data-tema=dash] .note{background:#FFF3CC;color:#10231F}
 
 <!-- MASUK / DAFTAR -->
 <section id="auth">
- <button type="button" class="btn sm ghost" id="tTemaA" style="position:fixed;top:14px;right:14px;z-index:5"></button>
- <div class="hero">
-  <div class="brand" style="font-size:1.3rem;color:var(--sun)">Ruang Guru Inklusif</div>
-  <h1>Perangkat ajar untuk setiap anak, siap dalam hitungan menit.</h1>
-  <p>Pilih ketunaan, isi topik, dan soal, modul ajar, atau LKPD langsung tersusun.</p>
-  <div class="chips"><span>Soal ujian</span><span>Modul ajar</span><span>LKPD</span></div>
- </div>
- <div class="panel"><div class="box">
-  <div class="tabs" role="tablist">
-   <button role="tab" id="tabMasuk" aria-selected="true">Masuk</button>
-   <button role="tab" id="tabDaftar" aria-selected="false">Daftar</button>
-  </div>
-  <form id="authForm" novalidate>
-   <div id="namaWrap" class="hide"><label for="nama">Nama lengkap</label><input id="nama" autocomplete="name"></div>
-   <label for="uname">Username</label><input id="uname" autocomplete="username" autocapitalize="none" placeholder="contoh: sony18">
-   <p style="font-size:.85rem;margin:.3rem 0 0">Gabungan nama dan angka, tanpa spasi.</p>
-   <label for="pass">Kata sandi (minimal 6 karakter)</label><input id="pass" type="password" autocomplete="current-password">
-   <p class="err" id="authErr" role="alert"></p>
-   <button class="btn teal" id="authBtn" style="width:100%;margin-top:.4rem">Masuk</button>
+ <svg class="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="k1"/><stop offset=".5" class="k2"/><stop offset=".78" class="k3"/><stop offset="1" class="k4"/></linearGradient>
+  <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#EBDDFF" stop-opacity=".6"/><stop offset="1" stop-color="#A478FF" stop-opacity=".4"/></linearGradient>
+  <filter id="bl"><feGaussianBlur stdDeviation="16"/></filter></defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <g stroke="#fff" stroke-linecap="round" opacity=".75"><line x1="520" y1="70" x2="780" y2="125" stroke-width="2.5"/><line x1="1130" y1="130" x2="1330" y2="190" stroke-width="2.5"/><line x1="90" y1="200" x2="230" y2="225" stroke-width="2"/></g>
+  <g fill="#fff" opacity=".8"><circle cx="300" cy="90" r="2"/><circle cx="980" cy="60" r="1.8"/><circle cx="1450" cy="90" r="2"/><circle cx="1500" cy="260" r="1.6"/><circle cx="640" cy="200" r="1.6"/></g>
+  <polygon class="mt" points="0,700 160,640 520,540 690,360 800,250 910,360 1080,540 1440,640 1600,700 1600,720 0,720"/>
+  <polygon class="sn" points="690,360 800,250 910,360 868,378 832,345 790,385 748,350"/>
+  <rect y="540" width="1600" height="220" fill="url(#mist)" filter="url(#bl)"/>
+  <ellipse cx="420" cy="665" rx="520" ry="34" fill="#fff" opacity=".2" filter="url(#bl)"/><ellipse cx="1200" cy="690" rx="560" ry="36" fill="#fff" opacity=".18" filter="url(#bl)"/>
+  <path class="hl" d="M0 770 Q320 700 640 750 T1220 740 T1600 770 L1600 900 L0 900Z"/>
+  <path class="tr" d="M70 600 L112 690 L91 690 L133 786 L106 786 L152 885 L-12 885 L34 786 L7 786 L49 690 L28 690Z M165 660 L199 732 L182 732 L215 809 L194 809 L231 888 L99 888 L136 809 L115 809 L148 732 L131 732Z M270 570 L315 669 L292 669 L337 775 L308 775 L358 884 L182 884 L232 775 L203 775 L248 669 L225 669Z M380 670 L414 739 L397 739 L430 813 L409 813 L446 888 L314 888 L351 813 L330 813 L363 739 L346 739Z M470 620 L509 704 L490 704 L529 794 L504 794 L547 886 L393 886 L436 794 L411 794 L450 704 L431 704Z M1180 650 L1216 725 L1198 725 L1235 805 L1211 805 L1252 888 L1108 888 L1149 805 L1125 805 L1162 725 L1144 725Z M1270 580 L1315 676 L1292 676 L1337 778 L1308 778 L1358 884 L1182 884 L1232 778 L1203 778 L1248 676 L1225 676Z M1380 660 L1414 732 L1397 732 L1430 809 L1409 809 L1446 888 L1314 888 L1351 809 L1330 809 L1363 732 L1346 732Z M1470 600 L1512 690 L1491 690 L1533 786 L1506 786 L1552 885 L1388 885 L1434 786 L1407 786 L1449 690 L1428 690Z M1560 640 L1596 718 L1578 718 L1615 801 L1591 801 L1632 887 L1488 887 L1529 801 L1505 801 L1542 718 L1524 718Z"/>
+ </svg>
+ <button type="button" class="btn sm ghost" id="tTemaA"></button>
+ <div class="loginwrap">
+  <div class="logobrand">🎓 Ruang Guru Inklusif</div>
+  <div class="box">
+   <h1 id="authJudul">LOGIN</h1>
+   <div class="tabs" style="display:none" role="tablist"><button role="tab" id="tabMasuk" aria-selected="true">Masuk</button><button role="tab" id="tabDaftar" aria-selected="false">Daftar</button></div>
+   <form id="authForm" novalidate>
+    <div id="namaWrap" class="hide"><label for="nama">Nama lengkap</label><input id="nama" autocomplete="name"></div>
+    <label for="uname">Username</label><input id="uname" autocomplete="username" autocapitalize="none" placeholder="contoh: sony18">
+    <p class="hint">Gabungan nama dan angka, tanpa spasi.</p>
+    <label for="pass">Kata sandi (minimal 6 karakter)</label><input id="pass" type="password" autocomplete="current-password">
+    <p class="err" id="authErr" role="alert"></p>
+    <button class="btn teal" id="authBtn">Masuk</button>
+    <p class="alt"><span id="authAlt">Belum punya akun?</span> <a href="#" id="authLink">Daftar di sini</a></p>
+   </form>
    <p class="note">Lupa username atau kata sandi? Hubungi admin sekolah untuk reset akun.</p>
-  </form>
-  <p class="note hide" id="demoNote">Mode percobaan: akun disimpan di peramban ini saja. Isi <b>FIREBASE_CONFIG</b> di kode agar login memakai Firebase.</p>
- </div></div>
+   <p class="note hide" id="demoNote">Mode percobaan: akun disimpan di peramban ini saja. Isi <b>FIREBASE_CONFIG</b> di kode agar login memakai Firebase.</p>
+  </div>
+  <p class="tagline">Perangkat ajar untuk setiap anak, siap dalam hitungan menit.</p>
+ </div>
 </section>
 
 <!-- APLIKASI -->
@@ -313,8 +297,8 @@ async function initAuth(){
  user=ls.get('ag_sesi',null); render();
 }
 function setTab(reg){isReg=reg;$('#tabMasuk').setAttribute('aria-selected',!reg);$('#tabDaftar').setAttribute('aria-selected',reg);
- $('#namaWrap').classList.toggle('hide',!reg);$('#authBtn').textContent=reg?'Buat akun':'Masuk';$('#authErr').textContent=''}
-$('#tabMasuk').onclick=()=>setTab(false);$('#tabDaftar').onclick=()=>setTab(true);
+ $('#namaWrap').classList.toggle('hide',!reg);$('#authBtn').textContent=reg?'Buat akun':'Masuk';$('#authErr').textContent='';$('#authJudul').textContent=reg?'DAFTAR':'LOGIN';$('#authAlt').textContent=reg?'Sudah punya akun?':'Belum punya akun?';$('#authLink').textContent=reg?'Masuk di sini':'Daftar di sini'}
+$('#tabMasuk').onclick=()=>setTab(false);$('#tabDaftar').onclick=()=>setTab(true);$('#authLink').onclick=e=>{e.preventDefault();setTab(!isReg)};
 const pesan=c=>({'auth/email-already-in-use':'Username sudah dipakai. Tambahkan angka lain.','auth/weak-password':'Kata sandi minimal 6 karakter.','auth/invalid-credential':'Username atau kata sandi salah.','auth/user-not-found':'Username belum terdaftar.','auth/wrong-password':'Username atau kata sandi salah.','auth/too-many-requests':'Terlalu banyak percobaan. Tunggu beberapa menit.','auth/operation-not-allowed':'Login Email/Password belum diaktifkan di Firebase (Authentication → Sign-in method).','auth/configuration-not-found':'Authentication belum diaktifkan di Firebase. Klik Get started di menu Authentication.','auth/unauthorized-domain':'Domain web ini belum didaftarkan di Firebase (Authentication → Settings → Authorized domains).','auth/network-request-failed':'Koneksi internet bermasalah. Coba lagi.','permission-denied':'Aturan Firestore belum dipasang atau belum cocok (lihat README).'}[c]||('Terjadi kendala ('+(c||'tidak dikenal')+'). Coba lagi.'));
 $('#authForm').onsubmit=async e=>{
  e.preventDefault();const un=$('#uname').value.trim().toLowerCase(),pw=$('#pass').value,nm=$('#nama').value.trim(),er=$('#authErr');er.textContent='';
@@ -910,11 +894,10 @@ document.addEventListener('click',e=>{
 /* ====== UKURAN HURUF ====== */
 let fs=ls.get('ag_fs',19);const setFs=n=>{fs=Math.min(26,Math.max(16,n));document.documentElement.style.fontSize=fs+'px';ls.set('ag_fs',fs)};
 setFs(fs);$('#fMin').onclick=()=>setFs(fs-2);$('#fPlus').onclick=()=>setFs(fs+2);
-let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema2','dash');
-if(!['dash','terang','gelap'].includes(tm))tm='dash';
-const NT={dash:'Dashboard',terang:'Terang',gelap:'Gelap'},URUT=['dash','terang','gelap'];
-const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent=$('#tTemaA').textContent='🎨 Tema: '+NT[tm]};
-$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=$('#tTemaA').onclick=()=>{tm=URUT[(URUT.indexOf(tm)+1)%3];ls.set('ag_tema2',tm);terap()};terap();
+let tb=ls.get('ag_tb',false),tm=ls.get('ag_tema3','gelap');
+if(tm!=='terang')tm='gelap';
+const terap=()=>{const h=document.documentElement;h.dataset.tema=tm;h.dataset.tebal=tb?'1':'0';$('#tTebal').setAttribute('aria-pressed',tb);$('#tTebal').textContent=tb?'B  Huruf tebal: Nyala':'B  Huruf tebal: Mati';$('#tTema').textContent=$('#tTemaA').textContent=tm==='gelap'?'☀️ Mode Terang':'🌙 Mode Gelap'};
+$('#tTebal').onclick=()=>{tb=!tb;ls.set('ag_tb',tb);terap()};$('#tTema').onclick=$('#tTemaA').onclick=()=>{tm=tm==='gelap'?'terang':'gelap';ls.set('ag_tema3',tm);terap()};terap();
 initAuth();
 </script>
 </body>
