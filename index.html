@@ -312,7 +312,7 @@ html[data-tema=terang] #auth .scene{filter:brightness(1.12) saturate(.95)}
  <header id="topbar">
   <div class="merek"><div class="mark">🎓</div><div><b>Ruang Guru Inklusif</b><small>Platform Asesmen &amp; Media Inklusif</small></div></div>
   <div class="jejak">Dasbor <i>/</i> Asesmen Inklusif <i>/</i> <b id="jejak"></b></div>
-  <div class="kanan"><div class="uchip"><span class="avatar">👤</span><div><b id="uNama"></b><small id="uSek"></small></div></div><button type="button" class="ikon" id="gear" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button></div>
+  <div class="kanan"><div class="uchip"><span class="avatar">👤</span><div><b id="uNama"></b></div></div><button type="button" class="ikon" id="gear" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button></div>
  </header>
   <nav aria-label="Menu utama">
   <div class="brand">Ruang Guru Inklusif</div>
@@ -443,7 +443,7 @@ $('#keluar').onclick=async()=>{if(fb)await fb.signOut();else{ls.set('ag_sesi',nu
 /* ====== TAMPILAN ====== */
 function render(){
  $('#auth').classList.toggle('hide',!!user);$('#app').classList.toggle('hide',!user);
- if(user){$('#salam').textContent='Halo, '+user.nama;$('#uNama').textContent=user.nama;$('#uSek').textContent='Guru '+((ls.get('ag_prof',{}).sekolah||'').replace(' (isi manual)','')||'Inklusif');$('#navAdmin').classList.toggle('hide',!user.admin);$('#navGudang').classList.toggle('hide',!user.admin);$('#navBank').classList.toggle('hide',!user.admin);if((mode==='admin'||mode==='gudang'||mode==='bank')&&!user.admin)mode='soal';go(mode)}
+ if(user){$('#salam').textContent='Halo, '+user.nama;$('#uNama').textContent=user.nama;$('#navAdmin').classList.toggle('hide',!user.admin);$('#navGudang').classList.toggle('hide',!user.admin);$('#navBank').classList.toggle('hide',!user.admin);if((mode==='admin'||mode==='gudang'||mode==='bank')&&!user.admin)mode='soal';go(mode)}
 }
 $$('nav .nv').forEach(b=>b.onclick=()=>go(b.dataset.m));
 $('#gear').onclick=()=>go('set');
@@ -489,7 +489,7 @@ function form(v){
   <label for="kemam">Tingkat kemampuan peserta didik</label><select id="kemam"><option>ringan</option><option selected>sedang</option><option>berat (butuh pendampingan penuh)</option></select>
   <label for="topik">Materi / topik (opsional)</label><textarea id="topik" placeholder="Contoh: Penjumlahan sampai 20"></textarea>
   <span id="g3"></span>${extra}
-  <button class="btn teal" id="gen" style="width:100%;margin-top:1.2rem">✨ BUAT ${MODE[mode].toUpperCase()} OTOMATIS (AI GENERATE)</button>
+  <button class="btn teal" id="gen" style="width:100%;margin-top:1.2rem">✨ BUAT ${MODE[mode].toUpperCase()} OTOMATIS</button>
   <p class="status" id="st" role="status"></p></div>
   <div class="stage" id="stage"><h3 class="jdlp">Pratinjau Lembar Kerja (Live A4 Preview)</h3><p class="empty">Hasil akan muncul di sini, lengkap dengan kop surat.</p></div></div>`;
  $('#sek').onchange=e=>{$('#alm').value=SEKOLAH[e.target.value]||''};
@@ -671,7 +671,7 @@ async function poolBank(d){
  const pk=pool.filter(it=>!it.ktn||/^(semua|umum)/i.test(it.ktn)||it.ktn===d.ktn);
  if(pk.length)pool=pk;else if(pool.length)level+=(level?'; ':'')+'ketunaan soal di Bank Soal berbeda dengan pilihan Anda';
  if(d.topik){const kt=d.topik.toLowerCase().split(/\s+/).filter(w=>w.length>3);const tm=pool.filter(it=>kt.some(w=>it.teks.toLowerCase().includes(w)));if(tm.length>=3)pool=tm}
- const ada=new Set();pool=pool.filter(it=>{const k=it.teks.slice(0,80).toLowerCase();if(ada.has(k))return false;ada.add(k);return true});
+ const ada=new Set();pool=pool.filter(it=>{const k=it.teks.replace(/\s+/g,' ').slice(0,300).toLowerCase();if(ada.has(k))return false;ada.add(k);return true});
  if(d.ktn==='Tunanetra')pool=pool.filter(it=>!it.gb);
  {const bersih=pool.filter(it=>!it.yatim);if(bersih.length)pool=bersih}
  return {pool,level}};
@@ -682,7 +682,10 @@ async function poolBank(d){
   const kl2=[...new Set(semua.filter(mpKuat).flatMap(it=>it.kelas?[it.kelas]:it.kelasDoc))],md=[...new Set(semua.map(it=>it.mapel).filter(Boolean))];
   info=!semua.length?'Bank Soal masih kosong.':!semua.some(mpKuat)?'Bank Soal belum punya soal '+d.mapel+(md.length?' (mata pelajaran yang ada: '+md.join(', ')+').':'.'):!kl2.length?'Soal '+d.mapel+' di Bank Soal belum ditandai kelasnya.':'Bank Soal untuk '+d.mapel+' hanya ada untuk kelas '+kl2.join(', ')+', tidak ada untuk kelas '+d.kelas+'.';
  }
- return {pool,level,info};
+ const dalam=new Set(pool),sudah=new Set(pool.map(it=>it.teks.replace(/\s+/g,' ').slice(0,300).toLowerCase()));
+ const cadangan=semua.filter(it=>!dalam.has(it)&&!it.utuh&&!it.yatim&&(mpKuat(it)||mpUmum(it))&&(d.ktn!=='Tunanetra'||!it.gb)).filter(it=>{const k=it.teks.replace(/\s+/g,' ').slice(0,300).toLowerCase();if(sudah.has(k))return false;sudah.add(k);return true})
+  .map(it=>({it,t:(mpKuat(it)?0:2)+(jj(it.kelas||it.kelasDoc[0])===jj(kl)?0:1)+((!it.ktn||/^(semua|umum)/i.test(it.ktn)||it.ktn===d.ktn)?0:4),r:Math.random()})).sort((a,b)=>a.t-b.t||a.r-b.r).map(x=>x.it);
+ return {pool,level,info,cadangan};
 }
 const EMO={buah:[['🍎','apel'],['🍌','pisang'],['🍇','anggur'],['🍊','jeruk'],['🍓','stroberi'],['🍉','semangka'],['🍍','nanas']],hewan:[['🐱','kucing'],['🐶','anjing'],['🐮','sapi'],['🐔','ayam'],['🐟','ikan'],['🐰','kelinci'],['🐘','gajah'],['🦁','singa']],kendaraan:[['🚗','mobil'],['🚲','sepeda'],['✈️','pesawat'],['🚢','kapal'],['🚌','bus']],benda:[['🏠','rumah'],['⚽','bola'],['📚','buku'],['✏️','pensil'],['🪑','kursi'],['🎒','tas']]};
 /* Soal bergambar bawaan (emoji) tanpa AI dan tanpa Bank Soal */
@@ -782,7 +785,7 @@ function tampilMenebali(d){
  tampilHasil();
 }
 async function rakitDariBank(d){
- const {pool,level,info}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
+ const {pool,level,info,cadangan}=await poolBank(d),butir=pool.filter(i=>!i.utuh);
  if(!butir.length){const u=pool.find(i=>i.utuh);return u?{html:u.raw,kunci:u.kunciUtuh,jumlah:0,utuh:u.judul,level}:{jumlah:0,info}}
  const minta={};let ada=false;TIPE.forEach(([k])=>{const n=+d[k]||0;if(n>0){minta[k]=n;ada=true}});if(!ada)minta.jPG=10;
  {const c={};butir.forEach(i=>{const x=i.tipe+(i.gb?'+gambar':'');c[x]=(c[x]||0)+1});console.info('Bank Soal yang cocok:',c)}
@@ -793,6 +796,7 @@ async function rakitDariBank(d){
   const n=minta[k]||0,g=gbN[kode]||0;if(!n&&!g)return;
   const gb=(kode==='PG'||kode==='UR')?buatGambarEmoji(kode,g):[];
   const biasa=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe===kode&&!it.gb)).sort((x,y)=>(y.kunci?1:0)-(x.kunci?1:0)).slice(0,n);biasa.forEach(i=>dipakai.add(i));
+  if(biasa.length<n){const tb=(cadangan||[]).filter(it=>!dipakai.has(it)&&it.tipe===kode&&!it.gb).sort((x,y)=>(y.kunci?1:0)-(x.kunci?1:0)).slice(0,n-biasa.length);tb.forEach(i=>{dipakai.add(i);biasa.push(i)})}
   if(kode==='UR'&&biasa.length<n){const tambah=acak(butir.filter(it=>!dipakai.has(it)&&it.tipe==='IS'&&!it.gb)).slice(0,n-biasa.length);tambah.forEach(i=>{dipakai.add(i);biasa.push(i)})}
   pilih[k]=acak([...gb,...biasa]);
   if(biasa.length<n)kurang.push(nama+' '+biasa.length+'/'+n);
